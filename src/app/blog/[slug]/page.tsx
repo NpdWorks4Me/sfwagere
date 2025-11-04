@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 
 // This function will be used by Next.js to generate static pages for each blog post
 export async function generateStaticParams() {
-  const postsDirectory = path.join(process.cwd(), '../posts');
+  const postsDirectory = path.join(process.cwd(), 'posts');
   const filenames = await fs.readdir(postsDirectory);
   return filenames.map((filename) => ({
     slug: filename.replace(/\.html$/, ''),
@@ -15,7 +15,7 @@ export async function generateStaticParams() {
 
 // This function gets the content of a single post
 async function getPost(slug: string) {
-  const postsDirectory = path.join(process.cwd(), '../posts');
+  const postsDirectory = path.join(process.cwd(), 'posts');
   const filePath = path.join(postsDirectory, `${slug}.html`);
   try {
     const fileContent = await fs.readFile(filePath, 'utf8');

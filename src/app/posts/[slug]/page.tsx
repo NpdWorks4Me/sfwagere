@@ -23,7 +23,7 @@ export function generateStaticParams() {
 function readPostHtml(slug: string): string {
   const filename = slugToFile[slug];
   if (!filename) return `<p>Post not found.</p>`;
-  const filePath = path.resolve(process.cwd(), '..', 'posts', filename);
+  const filePath = path.resolve(process.cwd(), 'posts', filename);
   try {
     const html = fs.readFileSync(filePath, 'utf8');
     const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
