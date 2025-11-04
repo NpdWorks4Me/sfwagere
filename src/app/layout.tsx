@@ -50,10 +50,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" type="image/svg+xml" />
       </head>
       <body>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <AuthProvider>
           <ParallaxBackground />
           <Header />
-          <main className="main-container">{children}</main>
+          <main id="main-content" className="main-container">{children}</main>
           <Footer />
         </AuthProvider>
       </body>
