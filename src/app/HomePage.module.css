@@ -1,0 +1,271 @@
+/* Home content section container */
+.contentHome {
+    position: relative;
+}
+
+.marquee {
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 2px solid #32FF32;
+    border-bottom: 2px solid #32FF32;
+    overflow: hidden;
+    z-index: 200;
+}
+
+.marqueeContent {
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    color: #32FF32;
+    line-height: 40px;
+    animation: scroll 20s linear infinite;
+}
+
+.blogSectionCard {
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.blogCardContainer {
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.blogCardContainer .glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(102, 153, 255, 0.2), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+/* export class names for module usage */
+.glow { pointer-events: none; }
+.inner { position: relative; }
+.animating { --animating: 1; }
+
+.blogCardContainer.animating .glow {
+    opacity: 1;
+}
+
+.blogCardContainer .inner {
+    background: rgba(10, 10, 20, 0.8);
+    border: 1px solid rgba(102, 153, 255, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+.postHeader {
+    margin-bottom: 15px;
+}
+
+.postTitle {
+    font-size: 1.5rem;
+    color: #cfe3ff;
+}
+
+.postMeta {
+    font-size: 0.8rem;
+    color: #aac;
+}
+
+.postExcerpt {
+    font-size: 1rem;
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.readMore {
+    color: #6699ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.textOverlay {
+    position: absolute;
+    z-index: 200;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.bottomLeft {
+    bottom: 200px;
+    left: 50px;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    color: #CC0000;
+    transform: rotate(-3deg);
+    animation: wobble 4s ease-in-out infinite;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 180ms ease, text-shadow 180ms ease, color 180ms ease;
+}
+
+.bottomLeft:hover {
+    animation: none !important;
+    color: #ff1a1a;
+    text-shadow:
+        0 0 8px #ff0000,
+        0 0 16px #ff1a1a,
+        0 0 24px #ff3333,
+        0 0 36px rgba(255, 0, 0, 0.6);
+    transform: rotate(-3deg) scale(1.18);
+}
+
+.easterEggQuestion {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #666;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1002;
+}
+
+.modalContent {
+    background: #1a1a2e;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modalTitle {
+    font-size: 1.5rem;
+}
+
+.modalClose {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modalBody p {
+    margin-bottom: 10px;
+}
+
+/* export hooks for modal body variants */
+.modalBody { --modal: 1; }
+.aboutBody { --about: 1; }
+
+.scribbleUnderline {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: #6699ff;
+}
+
+.loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000; /* Solid to fully cover content beneath */
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    overflow: hidden;
+    padding: 30px 0 0 30px;
+    text-align: center;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out;
+}
+
+.loadingScreen.fadeOut {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.word {
+    bottom: 0;
+    color: #fff;
+    font-size: 2.5em;
+    height: 2.5em;
+    left: 0;
+    line-height: 2.5em;
+    margin: auto;
+    right: 0;
+    position: absolute;
+    text-shadow: 0 0 10px rgba(102, 153, 255, 0.5), 0 0 5px rgba(153, 204, 255, 0.5);
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #6699ff;
+    animation: typing 2s steps(20, end), blink-caret 0.75s step-end infinite;
+}
+
+.overlay {
+    background-image: linear-gradient(transparent 0%, rgba(15, 15, 35, 0.5) 50%);
+    background-size: 1000px 2px;
+    bottom: 0;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+@keyframes scroll {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+
+@keyframes wobble {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent; }
+    50% { border-color: #6699ff; }
+}

@@ -1,0 +1,373 @@
+/* Guidelines Page Styling */
+.guidelines-container {
+    position: relative;
+    z-index: 5;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 2rem 3rem;
+}
+
+.guidelines-intro {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  opacity: 1;
+}
+
+.guidelines-intro p {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: #fff;
+  line-height: 1.6;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.guidelines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .guidelines-container {
+    padding: 0.5rem 1.5rem 2rem;
+  }
+  
+  .guidelines-intro {
+    margin-bottom: 1.25rem;
+  }
+  
+  .guidelines-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Guideline Card with Glow Effect */
+.guideline-card {
+  position: relative;
+  background: rgba(10, 10, 15, 0.95);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.guideline-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(255, 105, 180, 0.15);
+}
+
+.guideline-card:nth-child(1) { animation-delay: 0.1s; }
+.guideline-card:nth-child(2) { animation-delay: 0.2s; }
+.guideline-card:nth-child(3) { animation-delay: 0.3s; }
+.guideline-card:nth-child(4) { animation-delay: 0.4s; }
+.guideline-card:nth-child(5) { animation-delay: 0.5s; }
+.guideline-card:nth-child(6) { animation-delay: 0.6s; }
+.guideline-card:nth-child(7) { animation-delay: 0.7s; }
+.guideline-card:nth-child(8) { animation-delay: 0.8s; }
+.guideline-card:nth-child(9) { animation-delay: 0.9s; }
+
+.guideline-card .glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+    rgba(255, 105, 180, 0.12),
+    rgba(138, 43, 226, 0.08),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.guideline-card:hover .glow {
+  opacity: 1;
+}
+
+.guideline-card .inner {
+  position: relative;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: inherit;
+  z-index: 2;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.guideline-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 105, 180, 0.3),
+    rgba(138, 43, 226, 0.3),
+    rgba(75, 0, 130, 0.3)
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.guideline-card:hover::before {
+  opacity: 0.7;
+}
+
+.card-icon {
+  display: inline-block;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.4));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.guideline-card:hover .card-icon {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.6));
+}
+
+.card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+  transition: text-shadow 0.3s ease;
+  line-height: 1.3;
+}
+
+.guideline-card:hover .card-title {
+  text-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
+}
+
+.card-content {
+  font-family: 'Inter', sans-serif;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  flex: 1;
+}
+
+.card-content p {
+  margin-bottom: 1rem;
+  font-size: 0.98rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.card-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.card-content li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  line-height: 1.6;
+}
+
+.guideline-card:hover .card-content li {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.card-content li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #ff69b4;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.guideline-card:hover .card-content li::before {
+  transform: translateX(2px);
+}
+
+.card-content strong {
+  color: #ff69b4;
+  font-weight: 600;
+}
+
+.crisis-note {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 69, 58, 0.1);
+  border-left: 3px solid #ff453a;
+  border-radius: 4px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* CTA Card Special Styling */
+.cta-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 105, 180, 0.1),
+    rgba(138, 43, 226, 0.1)
+  );
+  grid-column: 1 / -1;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.cta-card .inner {
+  text-align: center;
+  padding: 2.5rem 2rem;
+}
+
+.cta-card .card-content p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 1.5rem;
+}
+
+.cta-button {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.95rem 2.5rem;
+  background: linear-gradient(135deg, #ff69b4, #8a2be2);
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(255, 105, 180, 0.4);
+  background: linear-gradient(135deg, #ff1493, #9932cc);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .guidelines-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .guidelines-intro h2 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+  }
+  
+  .guidelines-intro p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .guideline-card .inner {
+    padding: 1.75rem;
+  }
+  
+  .card-icon {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .card-content p {
+    font-size: 0.93rem;
+    margin-bottom: 0.875rem;
+  }
+  
+  .card-content li {
+    font-size: 0.9rem;
+    margin-bottom: 0.7rem;
+    padding-left: 1.35rem;
+  }
+  
+  .cta-card .inner {
+    padding: 2rem 1.5rem;
+  }
+
+  .cta-button {
+    padding: 0.875rem 2rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .guidelines-container {
+    padding: 0.5rem 1rem 1.5rem;
+  }
+  
+  .guidelines-intro {
+    margin-bottom: 1rem;
+  }
+  
+  .guidelines-grid {
+    gap: 1.25rem;
+  }
+  
+  .guideline-card .inner {
+    padding: 1.5rem;
+  }
+  
+  .card-content li {
+    font-size: 0.88rem;
+  }
+}

@@ -1,0 +1,14 @@
+.parallaxBg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 120vh;
+    background-image: url('https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/lostchild.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    will-change: transform;
+    filter: brightness(0.7) contrast(1.2);
+}

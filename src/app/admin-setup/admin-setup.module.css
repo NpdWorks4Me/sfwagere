@@ -1,0 +1,47 @@
+
+.container {
+  font-family: 'Inter', sans-serif;
+  background: #111;
+  color: #e0e0e0;
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.adminCard {
+  background: rgba(0,0,0,0.8);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.btn {
+  background: #6699ff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0.5rem;
+  text-decoration: none;
+}
+
+.inputGroup {
+  margin: 1rem 0;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.inputField {
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e0e0e0;
+  flex: 1;
+}
+
+.inputField:first-child {
+  flex: 2;
+}

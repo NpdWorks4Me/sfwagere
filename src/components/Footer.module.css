@@ -1,0 +1,46 @@
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 1px solid #333;
+    z-index: 150; /* below marquee */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.copyright {
+    font-size: 8px;
+    opacity: 0.5;
+    color: #888;
+}
+
+.comfort-element {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: comfortFadeIn 2s ease-in-out 1s forwards;
+}
+
+.pixel-heart {
+    animation: heartFlicker 3s ease-in-out infinite;
+}
+
+.pixel-heart svg {
+    filter: drop-shadow(0 0 3px rgba(255, 105, 180, 0.4));
+}
+
+.comfort-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #ddd;
+    opacity: 0.8;
+    animation: gentlePulse 4s ease-in-out infinite;
+}

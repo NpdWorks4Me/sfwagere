@@ -1,0 +1,96 @@
+/* Blog page styles — shares base theme from styles.css */
+
+/* Ensure parallax sits behind content */
+.parallax-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: url('https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/lostchild.webp') center/cover no-repeat;
+  z-index: 0;
+  /* transform: translateZ(0); */
+  will-change: transform;
+}
+
+.page-wrapper { min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+
+/* Blog main grid */
+.blog-main { flex: 1; padding: 24px 20px 80px; }
+.blog-grid { 
+  max-width: 1200px; margin: 0 auto; 
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem;
+  padding: 0 1rem;
+}
+
+.blog-card { overflow: hidden; border: 2px solid #c0f0c0; border-radius: 8px; background: rgba(0,0,0,0.75); box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+.blog-card-link { color: inherit; text-decoration: none; display: grid; grid-template-rows: 180px auto; height: 100%; }
+.blog-card-media { background-size: cover; background-position: center; filter: contrast(1.1) brightness(0.95); }
+.blog-card-body { padding: 12px; }
+.blog-card-title { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem; color: #6699ff; margin-bottom: 8px; }
+.blog-card-excerpt { font-family: 'Handlee', cursive; color: #c0f0c0; line-height: 1.35; font-size: 1rem; }
+.blog-card-meta { margin-top: 10px; font-size: 0.8rem; color: #aaa; display: flex; gap: 8px; }
+
+/* Footer heart SVG fix */
+.heart-svg { 
+    overflow: visible; 
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+/* Ensure footer heart is visible on blog page */
+.footer .pixel-heart {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    animation: heartFlicker 3s ease-in-out infinite;
+    position: relative;
+}
+
+.footer .pixel-heart svg {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(255, 105, 180, 0.8));
+    width: 32px;
+    height: 32px;
+}
+
+/* Make sure comfort text is also visible */
+.footer .comfort-text {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #ddd;
+    animation: gentlePulse 4s ease-in-out infinite;
+    margin-left: 8px;
+}
+
+/* Ensure animations are available */
+@keyframes heartFlicker {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+    25%, 75% { opacity: 0.9; }
+}
+
+@keyframes gentlePulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .blog-main {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 1.25rem 6rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 0;
+  }
+}

@@ -1,0 +1,137 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { forumApi } from '@/lib/supabase/forumApi';
+import Modal from '@/components/Modal';
+import NewTopicForm from '@/components/NewTopicForm';
+import ForumControls from '@/components/ForumControls';
+import AuthControls from '@/components/AuthControls';
+
+interface Topic {
+  id: number;
+  title: string;
+  body: string;
+  author_id: string;
+  flags_count: number;
+  is_pinned: boolean;
+  is_locked: boolean;
+  status: string;
+  content_warning: boolean;
+  content_warning_text: string | null;
+  created_at: string;
+  updated_at: string;
+  categories: { id: number; slug: string; name: string } | null;
+  profiles: { username: string; role: string } | null;
+  replies: number;
+}
+
+export default function ForumPageClient({ topics: initialTopics }: { topics: Topic[] }) {
+  const [topics, setTopics] = useState<Topic[]>(initialTopics);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isNewTopicModalOpen, setIsNewTopicModalOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const fetchTopics = async (filters: { category?: string; sort?: string; search?: string } = {}) => {
+    setLoading(true);
+    const [data, err] = await forumApi.listTopics(filters);
+    if (err) {
+      setError(err.message);
+    } else {
+      const formattedData = (data as any[]).map(item => ({
+        ...item,
+        categories: Array.isArray(item.categories) ? item.categories[0] : item.categories,
+        profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
+      }));
+      setTopics(formattedData || []);
+    }
+    setLoading(false);
+  };
+
+  const handleTopicCreated = () => {
+    // Refetch with current filters
+    const currentCategory = searchParams.get('category') || '';
+    const currentSort = searchParams.get('sort') || 'latest';
+    const currentSearch = searchParams.get('search') || '';
+    fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch });
+  };
+
+  const handleFilterChange = (filters: { category: string; sort: string; search: string }) => {
+    const params = new URLSearchParams();
+    if (filters.category) params.set('category', filters.category);
+    if (filters.sort) params.set('sort', filters.sort);
+    if (filters.search) params.set('search', filters.search);
+    router.push(`/forum?${params.toString()}`);
+  };
+
+  return (
+    <div id="content" className="container">
+      <header className="page-header">
+        <h1 className="glitch-title" data-text="FORUM">FORUM</h1>
+        <p>Discuss, share, and connect with the community.</p>
+        <AuthControls />
+      </header>
+
+      <div className="forum-controls">
+        <ForumControls onFilterChange={handleFilterChange} />
+        <div className="forum-actions">
+          <button className="btn btn-primary" onClick={() => setIsNewTopicModalOpen(true)}>Start New Topic</button>
+        </div>
+      </div>
+
+      {isNewTopicModalOpen && (
+        <Modal isOpen={isNewTopicModalOpen} onClose={() => setIsNewTopicModalOpen(false)}>
+          <NewTopicForm onTopicCreated={handleTopicCreated} onClose={() => setIsNewTopicModalOpen(false)} />
+        </Modal>
+      )}
+
+      <div className="forum-content">
+        {loading && <p>Loading topics...</p>}
+        {error && <p className="error-message">Error: {error}</p>}
+        {!loading && !error && topics.length === 0 && (
+          <div className="empty-state">
+            <h3>No topics yet.</h3>
+            <p>Be the first to start a conversation!</p>
+          </div>
+        )}
+        {!loading && !error && topics.length > 0 && (
+          <table className="forum-topic-list">
+            <thead>
+              <tr>
+                <th>Topic</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Replies</th>
+                <th>Activity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topics.map((topic) => (
+                <tr key={topic.id}>
+                  <td>
+                    <div className="topic-title">
+                      <a href={`/forum/topic/${topic.id}`}>{topic.title}</a>
+                      {topic.is_pinned && <span className="badge pin">Pinned</span>}
+                      {topic.is_locked && <span className="badge lock">Locked</span>}
+                    </div>
+                  </td>
+                  <td>
+                    {topic.categories && (
+                      <span className="badge category">{topic.categories.name}</span>
+                    )}
+                  </td>
+                  <td>{topic.profiles?.username || '...'}</td>
+                  <td>{topic.replies}</td>
+                  <td>{new Date(topic.updated_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
