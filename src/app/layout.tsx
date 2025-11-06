@@ -11,6 +11,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ParallaxBackground from '@/components/ParallaxBackground';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main-content" className="main-container">{children}</main>
           <Footer />
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
