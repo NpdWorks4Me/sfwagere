@@ -327,6 +327,7 @@ a:hover, a:focus {
     justify-content: flex-end;
 }
 .pagination-controls .page-indicator { color: #a7c4ff; }
+.pagination-controls .jump-input { width: 80px; }
 
 /* Buttons, inputs, selects */
 .btn { background: rgba(102,153,255,0.12); color: #e6f0ff; border: 1px solid rgba(102,153,255,0.35); border-radius: 8px; padding: 0.5rem 0.9rem; cursor: pointer; font: inherit; }

@@ -22,6 +22,7 @@ export default async function TopicPage({ params }: { params: { id: string } }) 
   const idNum = Number(params.id);
   const topic = Number.isFinite(idNum) ? await getTopic(idNum) : null;
   const bodyHtml = topic ? renderMarkdownServer(topic.body || '') : '';
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'}/forum/topic/${params.id}`;
   return (
     <div className="section-content">
       {topic ? (
@@ -45,6 +46,12 @@ export default async function TopicPage({ params }: { params: { id: string } }) 
             <div className="post-time">{new Date(topic.created_at).toLocaleString()}</div>
             <div className="post-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
           </article>
+          <link rel="canonical" href={canonicalUrl} />
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content={topic.title} />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta name="description" content={String(topic.body).slice(0,160)} />
+          <meta property="og:description" content={String(topic.body).slice(0,160)} />
         </>
       ) : (
         <p>Loading topic…</p>

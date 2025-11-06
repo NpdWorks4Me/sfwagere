@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
@@ -37,6 +37,9 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   const pageSize = 10;
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const [jump, setJump] = useState('');
+  const prefetchRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -85,6 +88,37 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch, page: nextPage });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams?.toString()]);
+
+  // Prefetch next page topics on idle
+  useEffect(() => {
+    if (!hasMore) return;
+    const currentCategory = searchParams.get('category') || '';
+    const currentSort = searchParams.get('sort') || 'latest';
+    const currentSearch = searchParams.get('search') || '';
+    const nextPageNum = page + 1;
+    // Use requestIdleCallback if available, else fallback to setTimeout
+    const prefetch = () => {
+      forumApi.listTopics({
+        categorySlug: currentCategory,
+        search: currentSearch,
+        sort: currentSort as any,
+        page: nextPageNum,
+        pageSize,
+      }); // Fire and forget; cache layer will retain
+    };
+    if ('requestIdleCallback' in window) {
+      const handle = (window as any).requestIdleCallback(prefetch, { timeout: 1500 });
+      prefetchRef.current = handle;
+      return () => {
+        if (prefetchRef.current && 'cancelIdleCallback' in window) {
+          (window as any).cancelIdleCallback(prefetchRef.current);
+        }
+      };
+    } else {
+      const handle = setTimeout(prefetch, 800);
+      return () => clearTimeout(handle);
+    }
+  }, [hasMore, page, searchParams, pageSize]);
 
   const handleFilterChange = (filters: { category: string; sort: string; search: string }) => {
     const params = new URLSearchParams();
@@ -163,6 +197,17 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   <div className="pagination-controls">
           <button
             className="btn"
+            disabled={page === 1 || loading}
+            onClick={() => {
+              const p = 1;
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', String(p));
+              setPage(p);
+              router.push(`/forum?${params.toString()}`);
+            }}
+          >First</button>
+          <button
+            className="btn"
             disabled={page <= 1 || loading}
             onClick={() => {
               const p = Math.max(1, page - 1);
@@ -188,6 +233,39 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
           >
             Next
           </button>
+          <button
+            className="btn"
+            disabled={loading || page === totalPages}
+            onClick={() => {
+              const p = totalPages;
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', String(p));
+              setPage(p);
+              router.push(`/forum?${params.toString()}`);
+            }}
+          >Last</button>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            placeholder="Jump"
+            className="form-input jump-input"
+            value={jump}
+            onChange={(e) => setJump(e.target.value)}
+          />
+          <button
+            className="btn"
+            disabled={loading || !jump.trim()}
+            onClick={() => {
+              const num = Number(jump);
+              if (!Number.isFinite(num) || num < 1 || num > totalPages) return;
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', String(num));
+              setPage(num);
+              router.push(`/forum?${params.toString()}`);
+              setJump('');
+            }}
+          >Go</button>
         </div>
       </div>
     </div>

@@ -50,9 +50,40 @@ export const forumApi = {
         content_warning_text: string | null;
         created_at: string;
         updated_at: string;
-        categories: { id: number; slug: string; name: string } | { id: number; slug: string; name: string }[] | null;
-        profiles: { username: string; role: string } | { username: string; role: string }[] | null;
+        categories: { id: number; slug: string; name: string } | null;
+        profiles: { username: string; role: string } | null;
       } & { replies: number })[]; totalCount: number; hasMore: boolean }>> {
+    // Call RPC (must exist in DB). Fallback to legacy logic if RPC errors.
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_topics_with_replies', {
+      category_slug: categorySlug || null,
+      search: search || null,
+      sort,
+      page,
+      page_size: pageSize,
+    });
+    if (!rpcError && Array.isArray(rpcData)) {
+      const totalCount = rpcData[0]?.total_count ? Number(rpcData[0].total_count) : 0;
+      const items = rpcData.map(r => ({
+        id: r.id,
+        title: r.title,
+        body: r.body,
+        author_id: r.author_id,
+        flags_count: r.flags_count,
+        is_pinned: r.is_pinned,
+        is_locked: r.is_locked,
+        status: r.status,
+        content_warning: r.content_warning,
+        content_warning_text: r.content_warning_text,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        categories: r.category_id ? { id: r.category_id, slug: r.category_slug, name: r.category_name } : null,
+        profiles: { username: r.author_username, role: r.author_role },
+        replies: Number(r.replies_count || 0),
+      }));
+      const hasMore = page * pageSize < totalCount;
+      return [{ items: items as any, totalCount, hasMore }, null];
+    }
+    // Legacy fallback (should rarely execute once RPC deployed)
     let query = supabase
       .from('topics')
       .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)', { count: 'exact' })
@@ -76,16 +107,16 @@ export const forumApi = {
     // Pagination
     const from = Math.max(0, (page - 1) * pageSize);
     const to = from + pageSize - 1;
-    const { data, error, count } = await query.range(from, to);
+  const { data, error, count } = await query.range(from, to);
     if (error) return [null, error];
     // Add replies count
     const topicsWithReplies = await Promise.all((data || []).map(async (topic) => {
-      const { count, error: countErr } = await supabase
+      const { count: replyCount, error: countErr } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('topic_id', topic.id)
         .eq('status', 'published');
-      return { ...topic, replies: countErr ? 0 : (count || 0) };
+      return { ...topic, replies: countErr ? 0 : (replyCount || 0) };
     }));
     let items = topicsWithReplies as any[];
     if (sort === 'most-replies') {
