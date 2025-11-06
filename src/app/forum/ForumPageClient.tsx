@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 import Modal from '@/components/Modal';
@@ -32,12 +33,22 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isNewTopicModalOpen, setIsNewTopicModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const fetchTopics = async (filters: { category?: string; sort?: string; search?: string } = {}) => {
+  const fetchTopics = async (filters: { category?: string; sort?: string; search?: string; page?: number } = {}) => {
     setLoading(true);
-    const [data, err] = await forumApi.listTopics(filters);
+    const effectivePage = filters.page ?? page;
+    const sort = (filters.sort as any) || 'latest';
+    const [data, err] = await forumApi.listTopics({
+      categorySlug: filters.category,
+      search: filters.search,
+      sort,
+      page: effectivePage,
+      pageSize,
+    });
     if (err) {
       setError(err.message);
     } else {
@@ -64,7 +75,10 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     const currentCategory = searchParams.get('category') || '';
     const currentSort = searchParams.get('sort') || 'latest';
     const currentSearch = searchParams.get('search') || '';
-    fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch });
+    const sp = Number(searchParams.get('page') || '1');
+    const nextPage = Number.isFinite(sp) && sp > 0 ? sp : 1;
+    if (nextPage !== page) setPage(nextPage);
+    fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch, page: nextPage });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams?.toString()]);
 
@@ -73,6 +87,8 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     if (filters.category) params.set('category', filters.category);
     if (filters.sort) params.set('sort', filters.sort);
     if (filters.search) params.set('search', filters.search);
+    params.set('page', '1');
+    setPage(1);
     router.push(`/forum?${params.toString()}`);
   };
 
@@ -122,7 +138,7 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                 <tr key={topic.id}>
                   <td>
                     <div className="topic-title">
-                      <a href={`/forum/topic/${topic.id}`}>{topic.title}</a>
+                      <Link href={`/forum/topic/${topic.id}`}>{topic.title}</Link>
                       {topic.is_pinned && <span className="badge pin">Pinned</span>}
                       {topic.is_locked && <span className="badge lock">Locked</span>}
                     </div>
@@ -140,6 +156,35 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
             </tbody>
           </table>
         )}
+  <div className="pagination-controls">
+          <button
+            className="btn"
+            disabled={page <= 1 || loading}
+            onClick={() => {
+              const p = Math.max(1, page - 1);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', String(p));
+              setPage(p);
+              router.push(`/forum?${params.toString()}`);
+            }}
+          >
+            Prev
+          </button>
+          <span className="page-indicator">Page {page}</span>
+          <button
+            className="btn"
+            disabled={loading || topics.length < pageSize}
+            onClick={() => {
+              const p = page + 1;
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', String(p));
+              setPage(p);
+              router.push(`/forum?${params.toString()}`);
+            }}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -93,6 +93,10 @@ a {
 
 .reply-form { margin-top: 1rem; display: grid; gap: 0.5rem; }
 .reply-form .form-actions { display: flex; justify-content: flex-end; }
+a.post-item + .post-item { margin-top: 1rem; }
+.mt-half { margin-top: 0.5rem; }
+.mt-quarter { margin-top: 0.25rem; }
+.mb-one { margin-bottom: 1rem; }
 a:hover, a:focus {
     color: #cfe3ff;
     text-decoration: underline;
@@ -314,6 +318,16 @@ a:hover, a:focus {
 .badge.pin { background: rgba(255,215,0,0.25); color: #fff2b2; }
 .badge.lock { background: rgba(255,99,71,0.25); color: #ffd1c8; }
 
+/* Pagination controls */
+.pagination-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+.pagination-controls .page-indicator { color: #a7c4ff; }
+
 /* Buttons, inputs, selects */
 .btn { background: rgba(102,153,255,0.12); color: #e6f0ff; border: 1px solid rgba(102,153,255,0.35); border-radius: 8px; padding: 0.5rem 0.9rem; cursor: pointer; font: inherit; }
 .btn:hover, .btn:focus { background: rgba(102,153,255,0.2); }
@@ -330,6 +344,8 @@ a:hover, a:focus {
 .modal-close { background: transparent; border: none; color: #e6f0ff; font-size: 1.5rem; cursor: pointer; }
 .modal-body { color: #cfe3ff; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+.preview-toggle-row { display: flex; justify-content: space-between; align-items: center; }
+.markdown-preview-box { border: 1px solid rgba(173,216,230,0.25); padding: 0.75rem; border-radius: 8px; min-height: 160px; background: rgba(10,10,20,0.35); }
 
 /* Post layout and TOC */
 .post-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 1100px; margin: 0 auto; padding: 1rem; }

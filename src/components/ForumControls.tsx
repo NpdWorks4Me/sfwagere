@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 
 interface Category {
@@ -19,6 +20,7 @@ export default function ForumControls({ onFilterChange }: ForumControlsProps) {
   const [category, setCategory] = useState('');
   const [sort, setSort] = useState('latest');
   const [search, setSearch] = useState('');
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -28,6 +30,17 @@ export default function ForumControls({ onFilterChange }: ForumControlsProps) {
       }
     };
     fetchCategories();
+  }, []);
+
+  // Initialize filters from URL params on mount
+  useEffect(() => {
+    const urlCategory = searchParams.get('category') || '';
+    const urlSort = searchParams.get('sort') || 'latest';
+    const urlSearch = searchParams.get('search') || '';
+    setCategory(urlCategory);
+    setSort(urlSort);
+    setSearch(urlSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

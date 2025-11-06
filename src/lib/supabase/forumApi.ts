@@ -35,7 +35,7 @@ export const forumApi = {
 
   // Topics
   async listTopics(
-    { categorySlug, search }: { categorySlug?: string, search?: string } = {},
+    { categorySlug, search, sort = 'latest', page = 1, pageSize = 10 }: { categorySlug?: string, search?: string, sort?: 'latest'|'newest'|'most-replies', page?: number, pageSize?: number } = {},
     supabase: SupabaseClientType = createClient()
     ): Promise<ApiResult<(
       {
@@ -58,8 +58,14 @@ export const forumApi = {
     let query = supabase
       .from('topics')
       .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
-      .order('is_pinned', { ascending: false })
-      .order('updated_at', { ascending: false });
+      .order('is_pinned', { ascending: false });
+
+    if (sort === 'newest') {
+      query = query.order('created_at', { ascending: false });
+    } else {
+      // latest activity by default
+      query = query.order('updated_at', { ascending: false });
+    }
 
     if (categorySlug) {
       query = query.eq('categories.slug', categorySlug);
@@ -69,7 +75,10 @@ export const forumApi = {
       // Safe search using multiple conditions
       query = query.or(`title.ilike.%${s}%,body.ilike.%${s}%`);
     }
-    const { data, error } = await query;
+    // Pagination
+    const from = Math.max(0, (page - 1) * pageSize);
+    const to = from + pageSize - 1;
+    const { data, error } = await query.range(from, to);
   if (error) return [null, error];
     // Add replies count
     const topicsWithReplies = await Promise.all((data || []).map(async (topic) => {
@@ -80,7 +89,11 @@ export const forumApi = {
         .eq('status', 'published');
       return { ...topic, replies: countErr ? 0 : (count || 0) };
     }));
-    return [topicsWithReplies as any, null];
+    let items = topicsWithReplies as any[];
+    if (sort === 'most-replies') {
+      items = [...items].sort((a, b) => (b.replies || 0) - (a.replies || 0));
+    }
+    return [items as any, null];
   },
 
   async createTopic(

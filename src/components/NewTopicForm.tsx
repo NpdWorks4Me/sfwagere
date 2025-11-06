@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { renderMarkdown } from '@/utils/markdown';
 import { forumApi } from '../lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
 
@@ -15,6 +16,7 @@ export default function NewTopicForm({ onTopicCreated, onClose }: NewTopicFormPr
   const [category, setCategory] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,16 +88,29 @@ export default function NewTopicForm({ onTopicCreated, onClose }: NewTopicFormPr
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="topic-body">Message</label>
-          <textarea
-            id="topic-body"
-            className="form-textarea enhanced-textarea"
-            rows={10}
-            placeholder="Share your thoughts..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            required
-          ></textarea>
+          <div className="preview-toggle-row">
+            <label htmlFor="topic-body">Message (Markdown supported)</label>
+            <button type="button" className="btn" onClick={() => setShowPreview(p => !p)}>
+              {showPreview ? 'Edit' : 'Preview'}
+            </button>
+          </div>
+          {!showPreview && (
+            <textarea
+              id="topic-body"
+              className="form-textarea enhanced-textarea"
+              rows={10}
+              placeholder="Share your thoughts..."
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              required
+            />
+          )}
+          {showPreview && (
+            <div
+              className="post-body markdown-preview-box"
+              dangerouslySetInnerHTML={{ __html: body ? renderMarkdown(body) : '<em>Nothing to preview…</em>' }}
+            />
+          )}
         </div>
         {error && <p className="error-message">{error}</p>}
       </div>

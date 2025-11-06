@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
+import { renderMarkdown } from '@/utils/markdown';
+import Modal from '@/components/Modal';
+import { createClient } from '@/lib/supabase/client';
 
 type Topic = {
   id: number;
@@ -37,6 +40,29 @@ export default function TopicPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState('');
   const [posting, setPosting] = useState(false);
+  const [reportOpen, setReportOpen] = useState<{ open: boolean, target: 'topic' | { postId: number } } | null>(null);
+  const [reportReason, setReportReason] = useState('abuse');
+  const [reportNotes, setReportNotes] = useState('');
+  const [reporting, setReporting] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!user) return;
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (!error && data?.role && ['moderator','admin'].includes(String(data.role).toLowerCase())) {
+          setIsModerator(true);
+        }
+      } catch {}
+    };
+    checkRole();
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,14 +127,49 @@ export default function TopicPageClient() {
             ⚠ Content warning: {topic.content_warning_text || 'Sensitive content'}
           </div>
         )}
+  <div className="form-actions mt-half">
+          <button className="btn" onClick={() => setReportOpen({ open: true, target: 'topic' })}>Report Topic</button>
+          {isModerator && (
+            <>
+              <button className="btn" onClick={async () => {
+                await forumApi.updateTopic(topic.id, { is_locked: !topic.is_locked });
+                const [t] = await forumApi.getTopic(topic.id);
+                setTopic(t as any);
+              }}>{topic.is_locked ? 'Unlock' : 'Lock'}</button>
+              <button className="btn" onClick={async () => {
+                await forumApi.updateTopic(topic.id, { is_pinned: !topic.is_pinned });
+                const [t] = await forumApi.getTopic(topic.id);
+                setTopic(t as any);
+              }}>{topic.is_pinned ? 'Unpin' : 'Pin'}</button>
+              <button className="btn" onClick={async () => {
+                if (!confirm('Delete this topic? This cannot be undone.')) return;
+                await forumApi.deleteTopic(topic.id);
+                window.location.href = '/forum';
+              }}>Delete</button>
+            </>
+          )}
+        </div>
       </header>
+
+      {/* Original post body */}
+  <article className="post-item mb-one">
+        <div className="post-author">{topic.profiles?.username || 'Anonymous'}</div>
+        <div className="post-time">{new Date(topic.created_at).toLocaleString()}</div>
+        <div className="post-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(topic.body) }} />
+  <div className="form-actions mt-half">
+          <button className="btn" onClick={() => setReportOpen({ open: true, target: 'topic' })}>Report</button>
+        </div>
+      </article>
 
       <div className="posts-list">
         {posts.map((p) => (
           <article key={p.id} className="post-item">
             <div className="post-author">{p.profiles?.username || 'Anonymous'}</div>
             <div className="post-time">{new Date(p.created_at).toLocaleString()}</div>
-            <div className="post-body" dangerouslySetInnerHTML={{ __html: p.body.replace(/\n/g, '<br/>') }} />
+            <div className="post-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(p.body) }} />
+            <div className="form-actions mt-quarter">
+              <button className="btn" onClick={() => setReportOpen({ open: true, target: { postId: p.id } })}>Report</button>
+            </div>
           </article>
         ))}
         {posts.length === 0 && <p>No replies yet. Be the first to respond.</p>}
@@ -133,6 +194,46 @@ export default function TopicPageClient() {
             </button>
           </div>
         </form>
+      )}
+
+      {reportOpen?.open && (
+        <Modal isOpen onClose={() => setReportOpen(null)}>
+          <div className="modal-header">
+            <h3>Report {reportOpen.target === 'topic' ? 'Topic' : 'Post'}</h3>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label htmlFor="report-reason">Reason</label>
+              <select id="report-reason" className="form-select" value={reportReason} onChange={(e) => setReportReason(e.target.value)}>
+                <option value="abuse">Abuse/Harassment</option>
+                <option value="spam">Spam</option>
+                <option value="nsfw">NSFW/Inappropriate</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="report-notes">Notes</label>
+              <textarea id="report-notes" className="form-textarea" rows={4} placeholder="Add details (optional)" value={reportNotes} onChange={(e) => setReportNotes(e.target.value)} />
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button className="btn" onClick={() => setReportOpen(null)} disabled={reporting}>Cancel</button>
+            <button className="btn btn-primary" disabled={reporting} onClick={async () => {
+              setReporting(true);
+              const notes = reportOpen.target === 'topic' ? reportNotes : `Post ID: ${(reportOpen.target as any).postId}\n${reportNotes}`;
+              const [_, err] = await forumApi.createReport({ topic_id: topic.id, reason: reportReason, notes });
+              setReporting(false);
+              if (err) {
+                alert(err.message);
+              } else {
+                setReportOpen(null);
+                setReportNotes('');
+                setReportReason('abuse');
+                alert('Report submitted. Thank you.');
+              }
+            }}>Submit Report</button>
+          </div>
+        </Modal>
       )}
     </div>
   );
