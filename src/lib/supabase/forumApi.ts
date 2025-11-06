@@ -24,6 +24,15 @@ export const forumApi = {
     return errTuple(res);
   },
 
+  async getTopic(id: number, supabase: SupabaseClientType = createClient()) {
+    const res = await supabase
+      .from('topics')
+      .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
+      .eq('id', id)
+      .single();
+    return errTuple(res);
+  },
+
   // Topics
   async listTopics(
     { categorySlug, search }: { categorySlug?: string, search?: string } = {},

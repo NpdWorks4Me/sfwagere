@@ -82,6 +82,17 @@ a {
     color: #8ab4ff;
     text-decoration: none;
 }
+.topic-header { margin-bottom: 1rem; }
+.topic-header .topic-meta { display: flex; gap: 0.5rem; align-items: center; color: #9dbdff; font-size: 0.95rem; }
+.topic-header .content-warning { margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-left: 3px solid #ff9f6e; background: rgba(255,159,110,0.12); color: #ffd9c7; border-radius: 6px; }
+
+.posts-list { display: grid; gap: 1rem; margin: 1rem 0 1.5rem; }
+.post-item { background: rgba(12,12,24,0.45); border: 1px solid rgba(173,216,230,0.18); border-radius: 12px; padding: 0.9rem 1rem; }
+.post-item .post-author { color: #cfe3ff; font-weight: 600; }
+.post-item .post-time { color: #9dbdff; font-size: 0.85rem; margin-bottom: 0.5rem; }
+
+.reply-form { margin-top: 1rem; display: grid; gap: 0.5rem; }
+.reply-form .form-actions { display: flex; justify-content: flex-end; }
 a:hover, a:focus {
     color: #cfe3ff;
     text-decoration: underline;
