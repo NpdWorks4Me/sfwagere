@@ -2,6 +2,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const PostToc = dynamic(() => import('../../../components/PostToc'), { ssr: false });
+const ReadingAid = dynamic(() => import('../../../components/ReadingAid'), { ssr: false });
 
 
 // Resolve possible locations of posts directory and return the first that exists
@@ -64,7 +68,22 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     <main className="main-content">
       <section className="section-content blog-section">
         <div className="blog-posts-container">
-          <article className="blog-post" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="post-layout">
+            <article>
+              {/* Optional: could derive a title from first h1, we keep inline content. */}
+              <ReadingAid />
+              <div className="post-body" dangerouslySetInnerHTML={{ __html: post.content }} />
+              <PostToc />
+            </article>
+            <aside id="toc-aside" className="toc-aside" aria-label="Table of Contents">
+              <button id="toc-toggle" className="toc-toggle" aria-controls="toc-collapsible-content" aria-expanded="false">
+                Table of Contents
+              </button>
+              <div id="toc-collapsible-content" className="toc-collapsible">
+                <ul className="toc-list"></ul>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     </main>

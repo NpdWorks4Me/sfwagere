@@ -332,6 +332,14 @@ a:hover, a:focus {
 .toc-list a { color: #a7c4ff; text-decoration: none; font-size: 0.95rem; }
 .toc-list a:hover { text-decoration: underline; }
 
+/* Reading meta and progress bar */
+.post-meta { color: #9dbdff; font-size: 0.95rem; margin: -0.25rem 0 0.75rem; opacity: 0.9; }
+.post-meta .reading-time { display: inline-flex; align-items: center; gap: 0.5ch; }
+.post-meta .reading-time::before { content: "⏱"; font-size: 0.95em; opacity: 0.9; }
+
+.read-progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, rgba(85,120,200,0.15), rgba(85,120,200,0)); z-index: 999; }
+.read-progress__bar { height: 100%; width: 0%; background: linear-gradient(90deg, #79a6ff, #cfe3ff); box-shadow: 0 0 8px rgba(121,166,255,0.6); transition: width 80ms linear; }
+
 /* Navigation active state */
 .nav-link.active {
     color: #32FF32;

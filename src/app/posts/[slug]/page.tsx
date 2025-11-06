@@ -3,6 +3,7 @@ import path from 'node:path';
 import dynamic from 'next/dynamic';
 
 const PostToc = dynamic(() => import('../../../components/PostToc'), { ssr: false });
+const ReadingAid = dynamic(() => import('../../../components/ReadingAid'), { ssr: false });
 
 interface Params { params: { slug: string } }
 
@@ -65,6 +66,8 @@ export default function PostPage({ params }: Params) {
     <div className="post-layout">
       <article>
         <h1 className="site-title" data-heading="tus" data-text={title}>{title}</h1>
+        {/* Reading time + progress bar */}
+        <ReadingAid />
         <div className="post-body" dangerouslySetInnerHTML={{ __html: content }} />
         {/* Boot client-side TOC population and toggle behavior */}
         <PostToc />

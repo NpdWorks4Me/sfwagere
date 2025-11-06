@@ -45,7 +45,7 @@ export default function BlogIndexPage() {
     <main className="main-content" id="latest">
       <section className="section-content blog-section">
         <header className="section-header">
-          <h2 className="glitch-title" data-text="FRAGMENTED THOUGHTS">FRAGMENTED THOUGHTS</h2>
+          <h3 className="glitch-title" data-text="FRAGMENTED THOUGHTS">FRAGMENTED THOUGHTS</h3>
           <p className="section-tagline">blog • current events • fragments</p>
         </header>
         <div className="blog-posts-container">
