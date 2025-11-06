@@ -35,6 +35,8 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   const [isNewTopicModalOpen, setIsNewTopicModalOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -42,7 +44,7 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     setLoading(true);
     const effectivePage = filters.page ?? page;
     const sort = (filters.sort as any) || 'latest';
-    const [data, err] = await forumApi.listTopics({
+    const [result, err] = await forumApi.listTopics({
       categorySlug: filters.category,
       search: filters.search,
       sort,
@@ -52,12 +54,14 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     if (err) {
       setError(err.message);
     } else {
-      const formattedData = (data as any[]).map(item => ({
+      const formattedData = (result?.items as any[]).map(item => ({
         ...item,
         categories: Array.isArray(item.categories) ? item.categories[0] : item.categories,
         profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
       }));
       setTopics(formattedData || []);
+      setHasMore(!!result?.hasMore);
+      setTotalCount(result?.totalCount || 0);
     }
     setLoading(false);
   };
@@ -170,10 +174,10 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
           >
             Prev
           </button>
-          <span className="page-indicator">Page {page}</span>
+          <span className="page-indicator">Page {page} / {Math.max(1, Math.ceil(totalCount / pageSize))}</span>
           <button
             className="btn"
-            disabled={loading || topics.length < pageSize}
+            disabled={loading || !hasMore}
             onClick={() => {
               const p = page + 1;
               const params = new URLSearchParams(searchParams.toString());

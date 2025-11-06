@@ -11,6 +11,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string) => Promise<any>;
   logout: () => Promise<any>;
+  role: string | null;
+  isModerator: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
   );
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     const getSession = async () => {
@@ -53,6 +56,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase]);
 
+  // Fetch role once user is known
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRole = async () => {
+      if (!user) { setRole(null); return; }
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      if (!cancelled) {
+        if (error) {
+          console.warn('Failed to load role', error.message);
+          setRole(null);
+        } else {
+          setRole((data?.role as any) || null);
+        }
+      }
+    };
+    fetchRole();
+    return () => { cancelled = true; };
+  }, [user, supabase]);
+
   const login = async (email: string) => {
     // For now, we'll just use a magic link for simplicity
     const { data, error } = await supabase.auth.signInWithOtp({ email });
@@ -70,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login,
     logout,
+    role,
+    isModerator: !!role && ['moderator','admin'].includes(role.toLowerCase()),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

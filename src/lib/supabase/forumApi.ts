@@ -37,8 +37,7 @@ export const forumApi = {
   async listTopics(
     { categorySlug, search, sort = 'latest', page = 1, pageSize = 10 }: { categorySlug?: string, search?: string, sort?: 'latest'|'newest'|'most-replies', page?: number, pageSize?: number } = {},
     supabase: SupabaseClientType = createClient()
-    ): Promise<ApiResult<(
-      {
+    ): Promise<ApiResult<{ items: ({
         id: number;
         title: string;
         body: string;
@@ -53,11 +52,10 @@ export const forumApi = {
         updated_at: string;
         categories: { id: number; slug: string; name: string } | { id: number; slug: string; name: string }[] | null;
         profiles: { username: string; role: string } | { username: string; role: string }[] | null;
-      } & { replies: number }
-    )[]>> {
+      } & { replies: number })[]; totalCount: number; hasMore: boolean }>> {
     let query = supabase
       .from('topics')
-      .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
+      .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)', { count: 'exact' })
       .order('is_pinned', { ascending: false });
 
     if (sort === 'newest') {
@@ -78,8 +76,8 @@ export const forumApi = {
     // Pagination
     const from = Math.max(0, (page - 1) * pageSize);
     const to = from + pageSize - 1;
-    const { data, error } = await query.range(from, to);
-  if (error) return [null, error];
+    const { data, error, count } = await query.range(from, to);
+    if (error) return [null, error];
     // Add replies count
     const topicsWithReplies = await Promise.all((data || []).map(async (topic) => {
       const { count, error: countErr } = await supabase
@@ -93,7 +91,9 @@ export const forumApi = {
     if (sort === 'most-replies') {
       items = [...items].sort((a, b) => (b.replies || 0) - (a.replies || 0));
     }
-    return [items as any, null];
+    const totalCount = count || 0;
+    const hasMore = from + (data?.length || 0) < totalCount;
+    return [{ items: items as any, totalCount, hasMore }, null];
   },
 
   async createTopic(

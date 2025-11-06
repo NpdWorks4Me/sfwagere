@@ -1,10 +1,56 @@
 import NextDynamic from 'next/dynamic';
+import { createClient } from '@supabase/supabase-js';
+import { renderMarkdownServer } from '@/utils/markdown-server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const TopicPageClient = NextDynamic(() => import('./TopicPageClient'), { ssr: false });
 
-export default function TopicPage() {
-  return <TopicPageClient />;
+async function getTopic(id: number) {
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  const { data, error } = await supabase
+    .from('topics')
+    .select('id, title, body, is_pinned, is_locked, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
+    .eq('id', id)
+    .single();
+  if (error) return null;
+  return data as any;
+}
+
+export default async function TopicPage({ params }: { params: { id: string } }) {
+  const idNum = Number(params.id);
+  const topic = Number.isFinite(idNum) ? await getTopic(idNum) : null;
+  const bodyHtml = topic ? renderMarkdownServer(topic.body || '') : '';
+  return (
+    <div className="section-content">
+      {topic ? (
+        <>
+          <header className="topic-header">
+            <h1 className="glitch-title" data-text={topic.title}>{topic.title}</h1>
+            <div className="topic-meta">
+              {topic.categories && <span className="badge category">{topic.categories.name}</span>}
+              {topic.is_pinned && <span className="badge pin">Pinned</span>}
+              {topic.is_locked && <span className="badge lock">Locked</span>}
+              <span className="subtle">Updated {new Date(topic.updated_at).toLocaleString()}</span>
+            </div>
+            {topic.content_warning && (
+              <div className="content-warning">
+                ⚠ Content warning: {topic.content_warning_text || 'Sensitive content'}
+              </div>
+            )}
+          </header>
+          <article className="post-item mb-one">
+            <div className="post-author">{topic.profiles?.username || 'Anonymous'}</div>
+            <div className="post-time">{new Date(topic.created_at).toLocaleString()}</div>
+            <div className="post-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          </article>
+        </>
+      ) : (
+        <p>Loading topic…</p>
+      )}
+      {/* Client-side replies, report modal, and actions */}
+      <TopicPageClient />
+    </div>
+  );
 }

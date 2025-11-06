@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
 import { renderMarkdown } from '@/utils/markdown';
 import Modal from '@/components/Modal';
-import { createClient } from '@/lib/supabase/client';
+import { allowAction } from '@/utils/rateLimit';
 
 type Topic = {
   id: number;
@@ -33,6 +33,7 @@ export default function TopicPageClient() {
   const params = useParams();
   const topicId = useMemo(() => Number(params?.id), [params]);
   const { user } = useAuth();
+  const router = useRouter();
 
   const [topic, setTopic] = useState<Topic | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -44,25 +45,7 @@ export default function TopicPageClient() {
   const [reportReason, setReportReason] = useState('abuse');
   const [reportNotes, setReportNotes] = useState('');
   const [reporting, setReporting] = useState(false);
-  const [isModerator, setIsModerator] = useState(false);
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!user) return;
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        if (!error && data?.role && ['moderator','admin'].includes(String(data.role).toLowerCase())) {
-          setIsModerator(true);
-        }
-      } catch {}
-    };
-    checkRole();
-  }, [user]);
+  const { isModerator } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +77,11 @@ export default function TopicPageClient() {
       return;
     }
     if (!reply.trim()) return;
+    const rl = allowAction(`post:${topicId}:${user.id}`, 10000);
+    if (!rl.allowed) {
+      setError(`Please wait ${(rl.waitMs/1000).toFixed(1)}s before posting again.`);
+      return;
+    }
     setPosting(true);
     setError(null);
     const [data, err] = await forumApi.createPost({ topic_id: topicId, body: reply.trim() });
@@ -108,58 +96,35 @@ export default function TopicPageClient() {
     setPosting(false);
   };
 
-  if (loading) return <div className="section-content"><p>Loading topic…</p></div>;
+  if (loading) return <div className="section-content"><p>Loading replies…</p></div>;
   if (error) return <div className="section-content"><p className="error-message">{error}</p></div>;
   if (!topic) return <div className="section-content"><p>Topic not found.</p></div>;
 
   return (
     <div className="section-content">
-      <header className="topic-header">
-        <h1 className="glitch-title" data-text={topic.title}>{topic.title}</h1>
-        <div className="topic-meta">
-          {topic.categories && <span className="badge category">{topic.categories.name}</span>}
-          {topic.is_pinned && <span className="badge pin">Pinned</span>}
-          {topic.is_locked && <span className="badge lock">Locked</span>}
-          <span className="subtle">Updated {new Date(topic.updated_at).toLocaleString()}</span>
-        </div>
-        {topic.content_warning && (
-          <div className="content-warning">
-            ⚠ Content warning: {topic.content_warning_text || 'Sensitive content'}
-          </div>
+      {/* Actions under SSR header/body */}
+      <div className="form-actions mt-half">
+        <button className="btn" onClick={() => setReportOpen({ open: true, target: 'topic' })}>Report Topic</button>
+        {isModerator && (
+          <>
+            <button className="btn" onClick={async () => {
+              await forumApi.updateTopic(topic.id, { is_locked: !topic.is_locked });
+              const [t] = await forumApi.getTopic(topic.id);
+              setTopic(t as any);
+            }}>{topic.is_locked ? 'Unlock' : 'Lock'}</button>
+            <button className="btn" onClick={async () => {
+              await forumApi.updateTopic(topic.id, { is_pinned: !topic.is_pinned });
+              const [t] = await forumApi.getTopic(topic.id);
+              setTopic(t as any);
+            }}>{topic.is_pinned ? 'Unpin' : 'Pin'}</button>
+            <button className="btn" onClick={async () => {
+              if (!confirm('Delete this topic? This cannot be undone.')) return;
+              await forumApi.deleteTopic(topic.id);
+              router.push('/forum');
+            }}>Delete</button>
+          </>
         )}
-  <div className="form-actions mt-half">
-          <button className="btn" onClick={() => setReportOpen({ open: true, target: 'topic' })}>Report Topic</button>
-          {isModerator && (
-            <>
-              <button className="btn" onClick={async () => {
-                await forumApi.updateTopic(topic.id, { is_locked: !topic.is_locked });
-                const [t] = await forumApi.getTopic(topic.id);
-                setTopic(t as any);
-              }}>{topic.is_locked ? 'Unlock' : 'Lock'}</button>
-              <button className="btn" onClick={async () => {
-                await forumApi.updateTopic(topic.id, { is_pinned: !topic.is_pinned });
-                const [t] = await forumApi.getTopic(topic.id);
-                setTopic(t as any);
-              }}>{topic.is_pinned ? 'Unpin' : 'Pin'}</button>
-              <button className="btn" onClick={async () => {
-                if (!confirm('Delete this topic? This cannot be undone.')) return;
-                await forumApi.deleteTopic(topic.id);
-                window.location.href = '/forum';
-              }}>Delete</button>
-            </>
-          )}
-        </div>
-      </header>
-
-      {/* Original post body */}
-  <article className="post-item mb-one">
-        <div className="post-author">{topic.profiles?.username || 'Anonymous'}</div>
-        <div className="post-time">{new Date(topic.created_at).toLocaleString()}</div>
-        <div className="post-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(topic.body) }} />
-  <div className="form-actions mt-half">
-          <button className="btn" onClick={() => setReportOpen({ open: true, target: 'topic' })}>Report</button>
-        </div>
-      </article>
+      </div>
 
       <div className="posts-list">
         {posts.map((p) => (
@@ -219,6 +184,11 @@ export default function TopicPageClient() {
           <div className="modal-actions">
             <button className="btn" onClick={() => setReportOpen(null)} disabled={reporting}>Cancel</button>
             <button className="btn btn-primary" disabled={reporting} onClick={async () => {
+              const rl = allowAction(`report:${topicId}:${user?.id || 'anon'}`, 15000);
+              if (!rl.allowed) {
+                alert(`Please wait ${(rl.waitMs/1000).toFixed(1)}s before submitting another report.`);
+                return;
+              }
               setReporting(true);
               const notes = reportOpen.target === 'topic' ? reportNotes : `Post ID: ${(reportOpen.target as any).postId}\n${reportNotes}`;
               const [_, err] = await forumApi.createReport({ topic_id: topic.id, reason: reportReason, notes });
