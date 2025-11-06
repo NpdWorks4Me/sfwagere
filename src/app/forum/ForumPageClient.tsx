@@ -27,7 +27,7 @@ interface Topic {
   replies: number;
 }
 
-export default function ForumPageClient({ topics: initialTopics }: { topics: Topic[] }) {
+export default function ForumPageClient({ topics: initialTopics = [] }: { topics?: Topic[] }) {
   const [topics, setTopics] = useState<Topic[]>(initialTopics);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +58,15 @@ export default function ForumPageClient({ topics: initialTopics }: { topics: Top
     const currentSearch = searchParams.get('search') || '';
     fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch });
   };
+
+  // Initial fetch on mount and whenever search params change
+  useEffect(() => {
+    const currentCategory = searchParams.get('category') || '';
+    const currentSort = searchParams.get('sort') || 'latest';
+    const currentSearch = searchParams.get('search') || '';
+    fetchTopics({ category: currentCategory, sort: currentSort, search: currentSearch });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams?.toString()]);
 
   const handleFilterChange = (filters: { category: string; sort: string; search: string }) => {
     const params = new URLSearchParams();
