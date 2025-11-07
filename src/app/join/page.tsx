@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SignUpForm from '@/components/SignUpForm';
 
 export const metadata: Metadata = {
   title: 'Community Guidelines',
@@ -179,6 +180,10 @@ export default function JoinPage() {
           </div>
         </div>
       </main>
+
+      <section className="signup-section">
+        <SignUpForm />
+      </section>
     </>
   );
 }
