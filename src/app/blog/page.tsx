@@ -21,22 +21,45 @@ const posts = [
 export default function BlogIndexPage() {
   useEffect(() => {
     const cards = Array.from(document.querySelectorAll<HTMLElement>('.blog-card-container'));
-    const handlers = new Map<HTMLElement, (e: PointerEvent) => void>();
+    const moveHandlers = new Map<HTMLElement, (e: PointerEvent) => void>();
+    const leaveHandlers = new Map<HTMLElement, (e: PointerEvent) => void>();
     cards.forEach((card) => {
       const handler = (e: PointerEvent) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+        // Percent positions (kept for any radial backgrounds)
         card.style.setProperty('--pointer-x', `${(x / rect.width) * 100}%`);
         card.style.setProperty('--pointer-y', `${(y / rect.height) * 100}%`);
+        // Distance/angle for glow intensity and border gradient orientation
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.hypot(dx, dy);
+        const max = Math.hypot(rect.width, rect.height) / 2;
+        const closeness = Math.max(0, Math.min(100, 100 - (dist / max) * 100));
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI; // -180..180
+        card.style.setProperty('--pointer-d', `${closeness}`);
+        card.style.setProperty('--pointer-\u00B0', `${angle}deg`);
       };
-      handlers.set(card, handler);
+      const leave = () => {
+        card.style.removeProperty('--pointer-x');
+        card.style.removeProperty('--pointer-y');
+        card.style.removeProperty('--pointer-d');
+        card.style.removeProperty('--pointer-\u00B0');
+      };
+      moveHandlers.set(card, handler);
+      leaveHandlers.set(card, leave);
       card.addEventListener('pointermove', handler);
+      card.addEventListener('pointerleave', leave);
     });
     return () => {
       cards.forEach((card) => {
-        const h = handlers.get(card);
-        if (h) card.removeEventListener('pointermove', h);
+        const mh = moveHandlers.get(card);
+        if (mh) card.removeEventListener('pointermove', mh);
+        const lh = leaveHandlers.get(card);
+        if (lh) card.removeEventListener('pointerleave', lh);
       });
     };
   }, []);
