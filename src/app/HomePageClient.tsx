@@ -6,9 +6,62 @@ import styles from './HomePage.module.css';
 
 const HomePageClient = () => {
   useEffect(() => {
-    // (Temporarily disabled) Complex loading overlay logic removed for stability.
-    // (Temporarily disabled) Easter egg modal and interactive card animation removed.
-    // This leaves a no-op effect to ensure the component remains client-only without side effects.
+    // Restore easter egg modal interactions with cleanup
+    const easterEggButton = document.getElementById('easter-egg');
+    const aboutModal = document.getElementById('about-modal') as HTMLElement | null;
+    const modalClose = document.getElementById('modal-close');
+
+    const openModal = () => { if (aboutModal) aboutModal.style.display = 'flex'; };
+    const closeModal = () => { if (aboutModal) aboutModal.style.display = 'none'; };
+    const outsideClick = (event: MouseEvent) => { if (event.target === aboutModal) closeModal(); };
+
+    if (easterEggButton && aboutModal && modalClose) {
+      easterEggButton.addEventListener('click', openModal);
+      modalClose.addEventListener('click', closeModal);
+      window.addEventListener('click', outsideClick);
+    }
+
+    // Restore blog card hover effect with cleanup
+    const cards = Array.from(document.querySelectorAll(`.${styles.blogCardContainer}`));
+    const FADE_DURATION = 750;
+
+    const handlers: Array<{ el: Element; move: (e: Event) => void; leave: () => void; }>= [];
+
+    const updateCardProperties = (card: Element, e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const perx = (e.clientX - rect.left) / rect.width;
+      const pery = (e.clientY - rect.top) / rect.height;
+      (card as HTMLElement).style.setProperty('--pointer-x', `${(perx * 100).toFixed(2)}%`);
+      (card as HTMLElement).style.setProperty('--pointer-y', `${(pery * 100).toFixed(2)}%`);
+    };
+
+    cards.forEach(card => {
+      let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
+      const move = (e: Event) => {
+        card.classList.add(styles.animating);
+        if (fadeTimeout) clearTimeout(fadeTimeout);
+        updateCardProperties(card, e as MouseEvent);
+        fadeTimeout = setTimeout(() => { card.classList.remove(styles.animating); }, FADE_DURATION);
+      };
+      const leave = () => { card.classList.remove(styles.animating); };
+      card.addEventListener('mousemove', move);
+      card.addEventListener('mouseleave', leave);
+      handlers.push({ el: card, move, leave });
+    });
+
+    return () => {
+      // Cleanup modal listeners
+      if (easterEggButton && aboutModal && modalClose) {
+        easterEggButton.removeEventListener('click', openModal);
+        modalClose.removeEventListener('click', closeModal);
+        window.removeEventListener('click', outsideClick);
+      }
+      // Cleanup card listeners
+      handlers.forEach(({ el, move, leave }) => {
+        el.removeEventListener('mousemove', move);
+        el.removeEventListener('mouseleave', leave);
+      });
+    };
   }, []);
 
   return (
