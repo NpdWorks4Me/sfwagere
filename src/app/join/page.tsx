@@ -182,7 +182,7 @@ export default function JoinPage() {
       </main>
 
       <section className="signup-section">
-        <SignUpForm />
+        {/* <SignUpForm /> */}
       </section>
     </>
   );
