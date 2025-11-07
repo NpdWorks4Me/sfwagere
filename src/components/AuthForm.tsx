@@ -10,6 +10,7 @@ interface AuthFormProps {
 
 export default function AuthForm({ onClose }: AuthFormProps) {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -18,11 +19,12 @@ export default function AuthForm({ onClose }: AuthFormProps) {
     e.preventDefault();
     setLoading(true);
     setMessage('');
-    const { error } = await login(email);
+    const { error } = await login(email, password);
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage('Check your email for the login link!');
+      setMessage('Check your email for confirmation!');
+      onClose();
     }
     setLoading(false);
   };
@@ -34,7 +36,7 @@ export default function AuthForm({ onClose }: AuthFormProps) {
         <button type="button" className="modal-close" onClick={onClose} aria-label="Close">&times;</button>
       </div>
       <div className="modal-body">
-        <p>Enter your email to receive a magic link to sign in.</p>
+        <p>Enter your email and password to sign up or sign in.</p>
         <div className="form-group">
           <label htmlFor="auth-email">Email</label>
           <input
@@ -47,12 +49,24 @@ export default function AuthForm({ onClose }: AuthFormProps) {
             placeholder="you@example.com"
           />
         </div>
+        <div className="form-group">
+          <label htmlFor="auth-password">Password</label>
+          <input
+            type="password"
+            id="auth-password"
+            className="form-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Your password"
+          />
+        </div>
         {message && <p className="message">{message}</p>}
       </div>
       <div className="modal-actions">
         <button type="button" className="btn" onClick={onClose}>Cancel</button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Sending...' : 'Send Magic Link'}
+          {loading ? 'Signing Up...' : 'Sign Up'}
         </button>
       </div>
     </form>

@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<any>;
   role: string | null;
   isModerator: boolean;
@@ -79,9 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [user, supabase]);
 
-  const login = async (email: string) => {
-    // For now, we'll just use a magic link for simplicity
-    const { data, error } = await supabase.auth.signInWithOtp({ email });
+  const login = async (email: string, password: string) => {
+    // Use signUp for email confirmation
+    const { data, error } = await supabase.auth.signUp({ email, password });
     return { data, error };
   };
 
