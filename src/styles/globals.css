@@ -230,15 +230,7 @@ h1.site-title[data-heading="tus"]::after {
 
 .blog-card-container:hover { transform: translate3d(0, -2px, 0.01px); }
 
-/* Remove any decorative glow/masks so cards have no background */
-.blog-card-container::before,
-.blog-card-container::after,
-.blog-card-container > .glow,
-.blog-card-container > .glow::before {
-  content: none !important;
-  display: none !important;
-}
-
+/* Transparent card with restored glow/border effects (no opaque fill) */
 .blog-card-container::before,
 .blog-card-container::after,
 .blog-card-container > .glow {
@@ -246,43 +238,56 @@ h1.site-title[data-heading="tus"]::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  transition: opacity 0.25s ease-out;
+  pointer-events: none;
+}
+
+/* Gradient border stroke using mask (transparent center) */
+.blog-card-container::before {
+  padding: 1px; /* border thickness */
+  background: conic-gradient(
+    from var(--pointer-°, 45deg),
+    rgba(255, 0, 102, 0.65),
+    rgba(122, 51, 255, 0.65),
+    rgba(0, 234, 255, 0.65),
+    rgba(255, 0, 102, 0.65)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: clamp(0, calc((var(--pointer-d, 0) - var(--color-sens)) / (100 - var(--color-sens))), 1);
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+/* Soft outer glow that brightens with proximity (keeps interior transparent) */
+.blog-card-container::after {
+  inset: -2px; /* bleed slightly outside for glow */
+  background:
+    radial-gradient(600px circle at 50% 50%, rgba(102,153,255,0.16), rgba(255,105,180,0.10), transparent 60%);
+  mix-blend-mode: screen;
+  opacity: clamp(0, calc((var(--pointer-d, 0) - var(--glow-sens)) / (100 - var(--glow-sens))), 0.9);
+  transition: opacity 0.35s ease;
   z-index: -1;
+}
+
+/* Inner directional glow layer (subtle, no background fill) */
+.blog-card-container > .glow {
+  background:
+    radial-gradient(460px circle at 50% 50%, rgba(0, 255, 255, 0.10), rgba(255, 0, 153, 0.06), transparent 55%);
+  opacity: clamp(0, calc((var(--pointer-d, 0) - var(--glow-sens)) / (100 - var(--glow-sens))), 0.6);
+  transition: opacity 0.3s ease;
+  z-index: 0;
 }
 
 .blog-card-container:not(:hover):not(.animating)::before,
 .blog-card-container:not(:hover):not(.animating)::after,
 .blog-card-container:not(:hover):not(.animating) > .glow {
   opacity: 0;
-  transition: opacity 0.75s ease-in-out;
-}
-
-.blog-card-container::before {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--card-bg) 0 100%) padding-box,
-    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box;
-  opacity: calc((var(--pointer-d) - var(--color-sens)) / (100 - var(--color-sens)));
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
-.blog-card-container::after {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--card-bg) 0 100%) padding-box;
-  opacity: calc((var(--pointer-d) - var(--glow-sens)) / (100 - var(--glow-sens)));
-  mix-blend-mode: normal;
-  -webkit-mask-image: none;
-  mask-image: none;
-  /* mask-composite has limited support; omit for broader compatibility */
-}
-
-.blog-card-container > .glow {
-  display: none;
-}
-.blog-card-container > .glow::before {
-  display: none;
 }
 
 .blog-card-container .inner { text-align: left; padding: 1.25rem; position: relative; z-index: 1; }
@@ -297,6 +302,17 @@ h1.site-title[data-heading="tus"]::after {
   .blog-card-container { --pads: 15px; }
   .blog-card-container .inner { padding: 1rem; }
   .blog-card-container .post-title { font-size: 1.1rem; }
+}
+
+/* Respect reduced motion: keep effects static, still no opaque backgrounds */
+@media (prefers-reduced-motion: reduce) {
+  .blog-card-container { transition: none; }
+  .blog-card-container:hover { transform: none; }
+  .blog-card-container::before,
+  .blog-card-container::after,
+  .blog-card-container > .glow {
+    transition: none;
+  }
 }
 
 /* Post/article basics */
