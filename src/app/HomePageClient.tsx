@@ -145,7 +145,7 @@ const HomePageClient = () => {
         </div>
       </div>
 
-      <Script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" strategy="beforeInteractive" />
+      {/* <Script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" strategy="beforeInteractive" /> */}
     </>
   );
 };
