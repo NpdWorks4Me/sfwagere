@@ -12,8 +12,11 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ data: any; error: any }>; // email+password sign in
   signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
   logout: () => Promise<{ error: any }>;
+  requestPasswordReset: (email: string, redirectTo?: string) => Promise<{ data: any; error: any }>;
+  updatePassword: (newPassword: string) => Promise<{ data: any; error: any }>;
   role: string | null;
   isModerator: boolean;
+  profile: { username: string | null } | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
   );
   const [role, setRole] = useState<string | null>(null);
+  const [profile, setProfile] = useState<{ username: string | null } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,22 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase]);
 
-  // Fetch role once user is known
+  // Fetch role and profile once user is known
   useEffect(() => {
     let cancelled = false;
     const fetchRole = async () => {
-      if (!user) { setRole(null); return; }
+      if (!user) { setRole(null); setProfile(null); return; }
       const { data, error } = await supabase.schema('forum')
         .from('profiles')
-        .select('role')
+        .select('role, username')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (!cancelled) {
         if (error) {
           console.warn('Failed to load role', error.message);
           setRole(null);
+          setProfile({ username: null });
         } else {
           setRole((data?.role as any) || null);
+          setProfile({ username: (data as any)?.username ?? null });
         }
       }
     };
@@ -94,6 +100,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   }, [supabase]);
 
+  const requestPasswordReset = useCallback(async (email: string, redirectTo?: string) => {
+    const url = redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/auth/reset` : undefined);
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, url ? { redirectTo: url } : undefined);
+    return { data, error };
+  }, [supabase]);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    return { data, error };
+  }, [supabase]);
+
   const value: AuthContextType = useMemo(() => ({
     user,
     session,
@@ -101,9 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     signUp,
     logout,
+    requestPasswordReset,
+    updatePassword,
     role,
     isModerator: role === 'moderator' || role === 'admin',
-  }), [user, session, loading, login, signUp, logout, role]);
+    profile,
+  }), [user, session, loading, login, signUp, logout, requestPasswordReset, updatePassword, role, profile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

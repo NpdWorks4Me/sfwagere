@@ -13,8 +13,8 @@ export default function AuthForm({ onClose }: AuthFormProps) {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signUp } = useAuth();
-  const [tab, setTab] = useState<'signin' | 'signup'>('signin');
+  const { login, signUp, requestPasswordReset } = useAuth();
+  const [tab, setTab] = useState<'signin' | 'signup' | 'reset'>('signin');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +45,20 @@ export default function AuthForm({ onClose }: AuthFormProps) {
     setLoading(false);
   };
 
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    const { error } = await requestPasswordReset(email);
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage('Reset email sent. Please check your inbox.');
+      // Keep on reset tab so user sees the message
+    }
+    setLoading(false);
+  };
+
   return (
     <div id="auth-form">
       <div className="modal-header">
@@ -55,9 +69,12 @@ export default function AuthForm({ onClose }: AuthFormProps) {
         <div className="tabs mb-quarter">
           <button className={`btn ${tab === 'signin' ? 'btn-primary' : ''}`} onClick={() => setTab('signin')}>Sign In</button>
           <button className={`btn ${tab === 'signup' ? 'btn-primary' : ''}`} onClick={() => setTab('signup')}>Sign Up</button>
+          <button className={`btn ${tab === 'reset' ? 'btn-primary' : ''}`} onClick={() => setTab('reset')}>Reset</button>
         </div>
         {tab === 'signin' && <p>Sign in with your email and password.</p>}
         {tab === 'signup' && <p>Create a new account with your email and password.</p>}
+        {tab === 'reset' && <p>Enter your email and we’ll send you a password reset link.</p>}
+
         <div className="form-group">
           <label htmlFor="auth-email">Email</label>
           <input
@@ -70,18 +87,25 @@ export default function AuthForm({ onClose }: AuthFormProps) {
             placeholder="you@example.com"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="auth-password">Password</label>
-          <input
-            type="password"
-            id="auth-password"
-            className="form-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Your password"
-          />
-        </div>
+
+        {tab !== 'reset' && (
+          <div className="form-group">
+            <label htmlFor="auth-password">Password</label>
+            <input
+              type="password"
+              id="auth-password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Your password"
+            />
+            {tab === 'signin' && (
+              <button className="btn btn-link" type="button" onClick={() => setTab('reset')}>Forgot password?</button>
+            )}
+          </div>
+        )}
+
         {message && <p className="message">{message}</p>}
       </div>
       <div className="modal-actions">
@@ -94,6 +118,11 @@ export default function AuthForm({ onClose }: AuthFormProps) {
         {tab === 'signup' && (
           <button type="button" className="btn btn-primary" onClick={handleSignUp} disabled={loading}>
             {loading ? 'Creating Account...' : 'Sign Up'}
+          </button>
+        )}
+        {tab === 'reset' && (
+          <button type="button" className="btn btn-primary" onClick={handleReset} disabled={loading || !email}>
+            {loading ? 'Sending…' : 'Send reset link'}
           </button>
         )}
       </div>

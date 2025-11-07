@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import styles from './Header.module.css';
+import AuthControls from './AuthControls';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,6 +33,9 @@ const Header = () => {
             <li className={styles.navItem}><Link href="/faq" className={styles.navLink}>FAQ</Link></li>
             <li className={styles.navItem}><Link href="/join" className={styles.navLink}>Join</Link></li>
           </ul>
+          <div className={styles.authRight}>
+            <AuthControls />
+          </div>
         </nav>
       </div>
     </header>
