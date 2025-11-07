@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+// import Link from 'next/link';
 import SignUpForm from '@/components/SignUpForm';
 
-export const metadata: Metadata = {
-  title: 'Community Guidelines',
-  description: 'Guidelines for The Unadulting Society community.',
-};
+// export const metadata: Metadata = {
+//   title: 'Community Guidelines',
+//   description: 'Guidelines for The Unadulting Society community.',
+// };
 
 export default function JoinPage() {
   return (
     <>
       <header className="header">
-        <h1 className="site-title" data-heading="tus" data-text="UR NOT ALONE">UR NOT ALONE</h1>
+        <h1 className="site-title">UR NOT ALONE</h1>
       </header>
 
       <main className="page-main">
@@ -173,7 +173,7 @@ export default function JoinPage() {
                 <h3 className="card-title">Come Join Us</h3>
                 <div className="card-content">
                   <p>If this feels right to you, we'd love to have you. We're building something genuine here—a place where diverse experiences and perspectives make us stronger together.</p>
-                  <Link href="/forum" className="cta-button">Enter The Clubhouse</Link>
+                  <a href="/forum" className="cta-button">Enter The Clubhouse</a>
                 </div>
               </div>
             </div>

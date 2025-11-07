@@ -42,16 +42,16 @@ import Script from 'next/script';
 //   display: 'swap',
 // });
 
-export const metadata: Metadata = {
-  title: 'The Unadulting Society',
-  description: 'A loose collective for people who don’t quite fit the scripts.',
-};
+// export const metadata: Metadata = {
+//   title: 'The Unadulting Society',
+//   description: 'A loose collective for people who don’t quite fit the scripts.',
+// };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" type="image/svg+xml" />
+        {/* <link rel="icon" href="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" type="image/svg+xml" /> */}
       </head>
       <body>
         <a href="#main-content" className="skip-link">Skip to main content</a>
