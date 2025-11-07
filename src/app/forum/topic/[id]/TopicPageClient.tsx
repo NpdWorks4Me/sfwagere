@@ -6,6 +6,7 @@ import { forumApi } from '@/lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
 import { renderMarkdown } from '@/utils/markdown';
 import Modal from '@/components/Modal';
+import AuthForm from '@/components/AuthForm';
 import { allowAction } from '@/utils/rateLimit';
 import { createClient } from '@/lib/supabase/client';
 
@@ -54,6 +55,7 @@ export default function TopicPageClient() {
   const [showPreview, setShowPreview] = useState(false);
   const replyRef = useRef<HTMLTextAreaElement | null>(null);
   const supabase = useMemo(() => createClient(), []);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -352,6 +354,11 @@ export default function TopicPageClient() {
             <button type="submit" className="btn btn-primary" disabled={!user || posting || !reply.trim()}>
               {posting ? 'Posting…' : 'Post Reply'}
             </button>
+            {!user && (
+              <button type="button" className="btn" onClick={() => setAuthOpen(true)}>
+                Sign in to post
+              </button>
+            )}
           </div>
         </form>
       )}
@@ -398,6 +405,12 @@ export default function TopicPageClient() {
               }
             }}>Submit Report</button>
           </div>
+        </Modal>
+      )}
+
+      {authOpen && (
+        <Modal isOpen onClose={() => setAuthOpen(false)}>
+          <AuthForm onClose={() => setAuthOpen(false)} />
         </Modal>
       )}
     </div>
