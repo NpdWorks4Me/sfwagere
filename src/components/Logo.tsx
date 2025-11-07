@@ -5,6 +5,8 @@ export default function Logo() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Temporarily disable GSAP animation
+    /*
     let cancelled = false;
     async function load() {
       const el = ref.current;
@@ -21,6 +23,7 @@ export default function Logo() {
     }
     load();
     return () => { cancelled = true; };
+    */
   }, []);
 
   return (

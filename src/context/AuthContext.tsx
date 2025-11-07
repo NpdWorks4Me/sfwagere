@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   // Fetch role once user is known
+  /*
   useEffect(() => {
     let cancelled = false;
     const fetchRole = async () => {
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchRole();
     return () => { cancelled = true; };
   }, [user, supabase]);
+  */
 
   const login = useCallback(async (email: string, password: string) => {
     // Use signUp for email confirmation

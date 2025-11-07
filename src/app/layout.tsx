@@ -54,14 +54,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <AuthProvider>
-          <Header />
+          {/* <Header /> */}
           <div className="page-wrapper">
             <main id="main-content" className="main-container">{children}</main>
-            <Footer />
+            {/* <Footer /> */}
           </div>
         </AuthProvider>
-        <SpeedInsights />
-        <Analytics />
+        {/* <SpeedInsights /> */}
+        {/* <Analytics /> */}
       </body>
     </html>
   );

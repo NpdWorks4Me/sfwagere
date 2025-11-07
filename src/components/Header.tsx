@@ -12,7 +12,8 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <Link href="/" className={styles.siteLogoLink}>
-          <Image src="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" alt="The Unadulting Society Logo" width={32} height={32} className={styles.logoImage} />
+          {/* <Image src="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" alt="The Unadulting Society Logo" width={32} height={32} className={styles.logoImage} /> */}
+          <img src="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" alt="The Unadulting Society Logo" width={32} height={32} className={styles.logoImage} />
         </Link>
     <div className={styles.titleContainer}>
       <h1 className={`${styles.siteTitle} site-title`} data-heading="tus" data-text="The Unadulting Society">
