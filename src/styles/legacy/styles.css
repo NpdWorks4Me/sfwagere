@@ -145,7 +145,8 @@ body {
 
 /* Blog Section */
 .blog-section {
-    background: linear-gradient(135deg, #220011 0%, #440022 50%, #220011 100%);
+    /* Removed gradient to allow page background to show through */
+    background: transparent;
 }
 
 .blog-nav {
