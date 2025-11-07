@@ -7,10 +7,7 @@ import styles from './HomePage.module.css';
 
 const HomePageClient = () => {
   useEffect(() => {
-    // Set page attribute for styling
-    document.body.setAttribute('data-page', 'home');
-
-    // Loading screen animation
+    // Easter egg modal
     const loadingScreen = document.getElementById('loading-screen');
     const loadingText = document.getElementById('loading-text');
     if (loadingScreen && loadingText) {
@@ -101,13 +98,7 @@ const HomePageClient = () => {
 
   return (
     <>
-      {/* Loading Screen */}
-      <div className={styles.loadingScreen} id="loading-screen" aria-live="polite">
-        <div className={styles.word} id="loading-text">[altering_reality...]</div>
-        <div className={styles.overlay}></div>
-      </div>
-
-  <section className={styles.contentHome}>
+      <section className={styles.contentHome}>
         {/* Scrolling Marquee */}
         <div className={styles.marquee} aria-hidden="true">
           <div className={styles.marqueeContent}>[WE BELIEVE YOU] • [YOU ARE SAFE NOW] • [THIS IS NOT A TEST] • [WE BELIEVE YOU] • [YOU ARE SAFE NOW] • [THIS IS NOT A TEST]</div>

@@ -33,15 +33,22 @@ body {
     min-height: 100vh;
 }
 
-/* Header visibility control for immersive loading */
-.header { display: block; }
-[data-page="home"] .header { display: none; }
-[data-page="home"].loaded .header { display: block; }
-
-/* Footer visibility control for immersive loading */
-.footer { display: block; }
-[data-page="home"] .footer { display: none; }
-[data-page="home"].loaded .footer { display: block; }
+/* Page Loading */
+.page-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5em;
+    z-index: 10000;
+}
 
 /* Typography scale and hierarchy */
 :root {
