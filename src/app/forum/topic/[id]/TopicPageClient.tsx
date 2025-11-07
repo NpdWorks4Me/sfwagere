@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
 import { renderMarkdown } from '@/utils/markdown';
 import Modal from '@/components/Modal';
 import { allowAction } from '@/utils/rateLimit';
+import { createClient } from '@/lib/supabase/client';
 
 type Topic = {
   id: string;
@@ -50,6 +51,9 @@ export default function TopicPageClient() {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingBody, setEditingBody] = useState('');
   const [editing, setEditing] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const replyRef = useRef<HTMLTextAreaElement | null>(null);
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,11 +97,101 @@ export default function TopicPageClient() {
       setError(err.message);
     } else {
       setReply('');
+      try { localStorage.removeItem(`reply_draft_${topicId}`); } catch {}
       // Refresh posts
       const [p] = await forumApi.listPosts({ topicId });
       setPosts((p as any) || []);
     }
     setPosting(false);
+  };
+
+  // Realtime updates for posts in this topic
+  useEffect(() => {
+    if (!topicId) return;
+    const channel = supabase
+      .channel(`posts_${topicId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'forum', table: 'posts', filter: `topic_id=eq.${topicId}` }, (payload: any) => {
+        setPosts(prev => {
+          const exists = prev.some(p => p.id === payload.new.id);
+          if (exists) return prev;
+          const next = [...prev, payload.new];
+          return next.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'forum', table: 'posts', filter: `id=eq.*` }, (payload: any) => {
+        setPosts(prev => prev.map(p => p.id === payload.new.id ? { ...p, ...payload.new } : p));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'forum', table: 'posts', filter: `id=eq.*` }, (payload: any) => {
+        setPosts(prev => prev.filter(p => p.id !== payload.old.id));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, topicId]);
+
+  // Draft autosave for reply
+  useEffect(() => {
+    if (!topicId) return;
+    try {
+      const key = `reply_draft_${topicId}`;
+      const saved = localStorage.getItem(key);
+      if (saved && !reply) setReply(saved);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topicId]);
+
+  useEffect(() => {
+    if (!topicId) return;
+    try {
+      const key = `reply_draft_${topicId}`;
+      if (reply) localStorage.setItem(key, reply);
+    } catch {}
+  }, [reply, topicId]);
+
+  // Simple markdown toolbar helpers
+  const surroundSelection = (before: string, after: string = before) => {
+    const el = replyRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const value = reply;
+    const selected = value.slice(start, end) || '';
+    const next = value.slice(0, start) + before + selected + after + value.slice(end);
+    setReply(next);
+    // restore caret
+    requestAnimationFrame(() => {
+      const pos = start + before.length + selected.length + (after ? 0 : 0);
+      el.focus();
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
+  const insertAtCursor = (text: string) => {
+    const el = replyRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const value = reply;
+    const next = value.slice(0, start) + text + value.slice(end);
+    setReply(next);
+    requestAnimationFrame(() => {
+      const pos = start + text.length;
+      el.focus();
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
+  const quotePost = (p: Post) => {
+    const author = p.profiles?.username || 'Anonymous';
+    const when = new Date(p.created_at).toLocaleString();
+    const quoted = p.body.split('\n').map(l => `> ${l}`).join('\n');
+    const block = `> @${author} wrote on ${when}:\n> \n${quoted}\n\n`;
+    // If reply has text, add separation
+    const prefix = reply.trim() ? '\n\n' : '';
+    setReply(r => `${r}${prefix}${block}`);
+    setShowPreview(true);
+    replyRef.current?.focus();
   };
 
   const beginEdit = (post: Post) => {
@@ -202,6 +296,7 @@ export default function TopicPageClient() {
               )}
               <div className="form-actions mt-quarter">
                 <button className="btn" onClick={() => setReportOpen({ open: true, target: { postId: p.id } })}>Report</button>
+                <button className="btn" onClick={() => quotePost(p)}>Quote</button>
                 {canEdit && !topic.is_locked && !isEditing && (
                   <>
                     <button className="btn" onClick={() => beginEdit(p)}>Edit</button>
@@ -224,15 +319,31 @@ export default function TopicPageClient() {
       {!topic.is_locked && (
         <form onSubmit={handleReply} className="reply-form">
           <label htmlFor="reply-body" className="form-label">Your reply</label>
-          <textarea
-            id="reply-body"
-            className="form-textarea enhanced-textarea"
-            rows={6}
-            placeholder={user ? 'Share your thoughts…' : 'Sign in to reply'}
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            disabled={!user || posting}
-          />
+          <div className="toolbar mb-quarter">
+            <button type="button" className="btn" onClick={() => surroundSelection('**')}>Bold</button>
+            <button type="button" className="btn" onClick={() => surroundSelection('*')}>Italic</button>
+            <button type="button" className="btn" onClick={() => surroundSelection('`')}>Code</button>
+            <button type="button" className="btn" onClick={() => insertAtCursor('\n- ')}>List</button>
+            <button type="button" className="btn" onClick={() => insertAtCursor('\n> ')}>Quote</button>
+            <button type="button" className="btn" onClick={() => insertAtCursor('[text](https://)')}>Link</button>
+            <span className="spacer" />
+            <button type="button" className="btn" onClick={() => setShowPreview(p => !p)}>{showPreview ? 'Edit' : 'Preview'}</button>
+          </div>
+          {!showPreview && (
+            <textarea
+              id="reply-body"
+              ref={replyRef}
+              className="form-textarea enhanced-textarea"
+              rows={6}
+              placeholder={user ? 'Share your thoughts…' : 'Sign in to reply'}
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              disabled={!user || posting}
+            />
+          )}
+          {showPreview && (
+            <div className="post-body markdown-preview-box" dangerouslySetInnerHTML={{ __html: renderMarkdown(reply || '') }} />
+          )}
           {error && <p className="error-message">{error}</p>}
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={!user || posting || !reply.trim()}>
