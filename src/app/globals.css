@@ -247,7 +247,7 @@ a:hover, a:focus {
 
 /* Blog Section */
 .blog-section {
-    background: linear-gradient(135deg, #220011 0%, #440022 50%, #220011 100%);
+    background: transparent;
 }
 
 .blog-nav {
