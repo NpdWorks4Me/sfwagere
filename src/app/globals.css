@@ -38,6 +38,11 @@ body {
 [data-page="home"] .header { display: none; }
 [data-page="home"].loaded .header { display: block; }
 
+/* Footer visibility control for immersive loading */
+.footer { display: block; }
+[data-page="home"] .footer { display: none; }
+[data-page="home"].loaded .footer { display: block; }
+
 /* Typography scale and hierarchy */
 :root {
     --text-base: 1rem; /* 16px */
