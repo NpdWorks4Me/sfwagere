@@ -53,6 +53,30 @@ html[data-text-size="1"] { font-size: 100%; }
 .topic-skeleton .sk-sub { margin: 8px 0; }
 .topic-skeleton .sk-lines { margin: 24px 0; }
 .topic-skeleton .sk-line { margin-bottom: 12px; }
+
+/* Blog skeletons */
+.blog-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.blog-card-skeleton {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 16px;
+  background: rgba(0,0,0,0.2);
+}
+.blog-card-skeleton .sk-title { margin-bottom: 10px; }
+.blog-card-skeleton .sk-meta { margin-bottom: 12px; }
+.blog-card-skeleton .sk-lines { margin-bottom: 12px; }
+.blog-card-skeleton .sk-line { margin-bottom: 8px; }
+.blog-card-skeleton .sk-cta { margin-top: 8px; }
+
+.post-skeleton .sk-title { margin: 14px 0; }
+.post-skeleton .sk-meta { margin: 10px 0; }
+.post-skeleton .sk-body .sk-line { margin-bottom: 10px; }
+.post-skeleton .sk-toc-title { margin: 8px 0; }
+.post-skeleton .sk-toc-line { margin-bottom: 6px; }
 html[data-text-size="2"] { font-size: 112.5%; }
 html[data-text-size="3"] { font-size: 125%; }
 
