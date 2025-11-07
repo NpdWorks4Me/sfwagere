@@ -10,6 +10,7 @@ import '../styles/legacy/mod.css';
 import { AuthProvider } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ParallaxBackground from '@/components/ParallaxBackground';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 import Script from 'next/script';
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
+          <ParallaxBackground />
           <Header />
           <div className="page-wrapper">
             <main id="main-content" className="main-container">{children}</main>
