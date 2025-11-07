@@ -21,40 +21,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [supabase] = useState(() =>
-    createBrowserClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  );
+  // const [supabase] = useState(() =>
+  //   createBrowserClient<Database>(
+  //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  //   )
+  // );
   const [role, setRole] = useState<string | null>(null);
 
-  useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-      } else {
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-      }
-      setLoading(false);
-    };
+  // useEffect(() => {
+  //   const getSession = async () => {
+  //     const { data, error } = await supabase.auth.getSession();
+  //     if (error) {
+  //       console.error('Error getting session:', error);
+  //     } else {
+  //       setSession(data.session);
+  //       setUser(data.session?.user ?? null);
+  //     }
+  //     setLoading(false);
+  //   };
 
-    getSession();
+  //   getSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+  //   const { data: authListener } = supabase.auth.onAuthStateChange(
+  //     (event, session) => {
+  //       setSession(session);
+  //       setUser(session?.user ?? null);
+  //       setLoading(false);
+  //     }
+  //   );
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [supabase]);
+  //   return () => {
+  //     authListener?.subscription.unsubscribe();
+  //   };
+  // }, [supabase]);
 
   // Fetch role once user is known
   /*
@@ -81,26 +81,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, supabase]);
   */
 
-  const login = useCallback(async (email: string, password: string) => {
-    // Use signUp for email confirmation
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    return { data, error };
-  }, [supabase]);
+  // const login = useCallback(async (email: string, password: string) => {
+  //   // Use signUp for email confirmation
+  //   const { data, error } = await supabase.auth.signUp({ email, password });
+  //   return { data, error };
+  // }, [supabase]);
 
-  const logout = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
-  }, [supabase]);
+  // const logout = useCallback(async () => {
+  //   const { error } = await supabase.auth.signOut();
+  //   return { error };
+  // }, [supabase]);
 
   const value = useMemo(() => ({
-    user,
-    session,
-    loading,
-    login,
-    logout,
-    role,
-    isModerator: !!role && ['moderator','admin'].includes(role.toLowerCase()),
-  }), [user, session, loading, login, logout, role]);
+    user: null,
+    session: null,
+    loading: false,
+    login: async () => ({ data: null, error: null }),
+    logout: async () => ({ error: null }),
+    role: null,
+    isModerator: false,
+  }), []);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
