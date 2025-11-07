@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, createContext, useContext, useEffect, ReactNode } from 'react';
+import { useState, createContext, useContext, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/lib/database.types';
@@ -79,18 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [user, supabase]);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     // Use signUp for email confirmation
     const { data, error } = await supabase.auth.signUp({ email, password });
     return { data, error };
-  };
+  }, [supabase]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     return { error };
-  };
+  }, [supabase]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     session,
     loading,
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     role,
     isModerator: !!role && ['moderator','admin'].includes(role.toLowerCase()),
-  };
+  }), [user, session, loading, login, logout, role]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
