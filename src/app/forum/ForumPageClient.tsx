@@ -11,7 +11,7 @@ import ForumControls from '@/components/ForumControls';
 import AuthControls from '@/components/AuthControls';
 
 interface Topic {
-  id: number;
+  id: string;
   title: string;
   body: string;
   author_id: string;
@@ -141,7 +141,7 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
       <div className="forum-controls">
         <ForumControls onFilterChange={handleFilterChange} />
         <div className="forum-actions">
-          <button className="btn btn-primary" onClick={() => setIsNewTopicModalOpen(true)}>Start New Topic</button>
+          <button className="btn btn-primary" onClick={() => { console.log('Start new topic clicked'); setIsNewTopicModalOpen(true); }}>Start New Topic</button>
         </div>
       </div>
 

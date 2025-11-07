@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 const TopicPageClient = NextDynamic(() => import('./TopicPageClient'), { ssr: false });
 
-async function getTopic(id: number) {
+async function getTopic(id: string) {
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
   const { data, error } = await supabase
     .from('topics')
@@ -19,8 +19,7 @@ async function getTopic(id: number) {
 }
 
 export default async function TopicPage({ params }: { params: { id: string } }) {
-  const idNum = Number(params.id);
-  const topic = Number.isFinite(idNum) ? await getTopic(idNum) : null;
+  const topic = params.id ? await getTopic(params.id) : null;
   const bodyHtml = topic ? renderMarkdownServer(topic.body || '') : '';
   const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'}/forum/topic/${params.id}`;
   return (

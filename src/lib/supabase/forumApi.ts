@@ -24,7 +24,7 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async getTopic(id: number, supabase: SupabaseClientType = createClient()) {
+  async getTopic(id: string, supabase: SupabaseClientType = createClient()) {
     const res = await supabase
       .from('topics')
       .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
@@ -38,7 +38,7 @@ export const forumApi = {
     { categorySlug, search, sort = 'latest', page = 1, pageSize = 10 }: { categorySlug?: string, search?: string, sort?: 'latest'|'newest'|'most-replies', page?: number, pageSize?: number } = {},
     supabase: SupabaseClientType = createClient()
     ): Promise<ApiResult<{ items: ({
-        id: number;
+        id: string;
         title: string;
         body: string;
         author_id: string;
@@ -64,7 +64,7 @@ export const forumApi = {
     if (!rpcError && Array.isArray(rpcData)) {
       const totalCount = rpcData[0]?.total_count ? Number(rpcData[0].total_count) : 0;
       const items = rpcData.map(r => ({
-        id: r.id,
+  id: r.id,
         title: r.title,
         body: r.body,
         author_id: r.author_id,
@@ -149,7 +149,7 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async updateTopic(id: number, patch: object, supabase: SupabaseClientType = createClient()) {
+  async updateTopic(id: string, patch: object, supabase: SupabaseClientType = createClient()) {
     const res = await supabase
       .from('topics')
       .update(patch)
@@ -159,7 +159,7 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async deleteTopic(id: number, supabase: SupabaseClientType = createClient()) {
+  async deleteTopic(id: string, supabase: SupabaseClientType = createClient()) {
     const res = await supabase
       .from('topics')
       .delete()
@@ -168,7 +168,7 @@ export const forumApi = {
   },
 
   // Reports
-  async createReport({ topic_id, reason, notes }: { topic_id: number, reason: string, notes: string }, supabase: SupabaseClientType = createClient()) {
+  async createReport({ topic_id, reason, notes }: { topic_id: string, reason: string, notes: string }, supabase: SupabaseClientType = createClient()) {
     const { data: user } = await supabase.auth.getUser();
     const reporter_id = user?.user?.id || null;
     const res = await supabase
@@ -187,7 +187,7 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async updateReport(id: number, patch: object, supabase: SupabaseClientType = createClient()) {
+  async updateReport(id: string, patch: object, supabase: SupabaseClientType = createClient()) {
     const res = await supabase
       .from('reports')
       .update(patch)
@@ -198,7 +198,7 @@ export const forumApi = {
   },
 
   // Posts
-  async listPosts({ topicId }: { topicId: number }, supabase: SupabaseClientType = createClient()) {
+  async listPosts({ topicId }: { topicId: string }, supabase: SupabaseClientType = createClient()) {
     const res = await supabase
       .from('posts')
       .select('*, profiles(username, role)')
@@ -208,7 +208,7 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async createPost({ topic_id, body }: { topic_id: number, body: string }, supabase: SupabaseClientType = createClient()) {
+  async createPost({ topic_id, body }: { topic_id: string, body: string }, supabase: SupabaseClientType = createClient()) {
     const { data: user } = await supabase.auth.getUser();
     const author_id = user?.user?.id || null;
     if (!author_id) return [null, new Error('User not authenticated')];

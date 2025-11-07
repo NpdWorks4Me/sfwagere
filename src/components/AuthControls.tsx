@@ -21,7 +21,7 @@ export default function AuthControls() {
 
   return (
     <div className="auth-controls">
-      <button onClick={() => setIsAuthModalOpen(true)} className="btn btn-primary">Login / Sign Up</button>
+      <button onClick={() => { console.log('Login button clicked'); setIsAuthModalOpen(true); }} className="btn btn-primary">Login / Sign Up</button>
       {isAuthModalOpen && (
         <Modal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)}>
           <AuthForm onClose={() => setIsAuthModalOpen(false)} />

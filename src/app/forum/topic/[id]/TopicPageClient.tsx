@@ -9,7 +9,7 @@ import Modal from '@/components/Modal';
 import { allowAction } from '@/utils/rateLimit';
 
 type Topic = {
-  id: number;
+  id: string;
   title: string;
   body: string;
   is_pinned: boolean;
@@ -23,7 +23,7 @@ type Topic = {
 };
 
 type Post = {
-  id: number;
+  id: string;
   body: string;
   created_at: string;
   profiles: { username: string; role: string } | null;
@@ -31,7 +31,7 @@ type Post = {
 
 export default function TopicPageClient() {
   const params = useParams();
-  const topicId = useMemo(() => Number(params?.id), [params]);
+  const topicId = useMemo(() => String(params?.id || ''), [params]);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -41,7 +41,7 @@ export default function TopicPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState('');
   const [posting, setPosting] = useState(false);
-  const [reportOpen, setReportOpen] = useState<{ open: boolean, target: 'topic' | { postId: number } } | null>(null);
+  const [reportOpen, setReportOpen] = useState<{ open: boolean, target: 'topic' | { postId: string } } | null>(null);
   const [reportReason, setReportReason] = useState('abuse');
   const [reportNotes, setReportNotes] = useState('');
   const [reporting, setReporting] = useState(false);
@@ -50,14 +50,14 @@ export default function TopicPageClient() {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      if (!topicId) return;
+  if (!topicId) return;
       setLoading(true);
       const [t, terr] = await forumApi.getTopic(topicId);
       if (!cancelled) {
         if (terr) setError(terr.message);
         else setTopic(t as any);
       }
-      const [p, perr] = await forumApi.listPosts({ topicId });
+  const [p, perr] = await forumApi.listPosts({ topicId });
       if (!cancelled) {
         if (perr) setError(perr.message);
         else setPosts((p as any) || []);
@@ -77,7 +77,7 @@ export default function TopicPageClient() {
       return;
     }
     if (!reply.trim()) return;
-    const rl = allowAction(`post:${topicId}:${user.id}`, 10000);
+  const rl = allowAction(`post:${topicId}:${user.id}`, 10000);
     if (!rl.allowed) {
       setError(`Please wait ${(rl.waitMs/1000).toFixed(1)}s before posting again.`);
       return;
