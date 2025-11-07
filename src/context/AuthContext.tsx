@@ -61,10 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     const fetchRole = async () => {
       if (!user) { setRole(null); return; }
-      const { data, error } = await supabase
+      const { data, error } = await supabase.schema('forum')
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
       if (!cancelled) {
         if (error) {

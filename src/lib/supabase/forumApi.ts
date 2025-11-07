@@ -17,16 +17,14 @@ type SupabaseClientType = SupabaseClient<any, "public", any>;
 export const forumApi = {
   // Categories
   async listCategories(supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('categories')
+    const res = await supabase.schema('forum').from('categories')
       .select('id, slug, name, description, sort_order')
       .order('sort_order', { ascending: true });
     return errTuple(res);
   },
 
   async getTopic(id: string, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('topics')
+    const res = await supabase.schema('forum').from('topics')
       .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
       .eq('id', id)
       .single();
@@ -84,8 +82,7 @@ export const forumApi = {
       return [{ items: items as any, totalCount, hasMore }, null];
     }
     // Legacy fallback (should rarely execute once RPC deployed)
-    let query = supabase
-      .from('topics')
+    let query = supabase.schema('forum').from('topics')
       .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)', { count: 'exact' })
       .order('is_pinned', { ascending: false });
 
@@ -132,8 +129,7 @@ export const forumApi = {
     supabase: SupabaseClientType = createClient()
     ) {
     // Resolve category id
-    const { data: cats, error: catErr } = await supabase
-      .from('categories')
+    const { data: cats, error: catErr } = await supabase.schema('forum').from('categories')
       .select('id')
       .eq('slug', categorySlug)
       .limit(1);
@@ -141,8 +137,7 @@ export const forumApi = {
   if (!cats || !cats[0]) return [null, new Error('Category not found')];
     const category_id = cats[0].id;
 
-    const res = await supabase
-      .from('topics')
+    const res = await supabase.schema('forum').from('topics')
       .insert({ category_id, title, body, content_warning, content_warning_text })
       .select('*')
       .single();
@@ -150,8 +145,7 @@ export const forumApi = {
   },
 
   async updateTopic(id: string, patch: object, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('topics')
+    const res = await supabase.schema('forum').from('topics')
       .update(patch)
       .eq('id', id)
       .select('*')
@@ -160,8 +154,7 @@ export const forumApi = {
   },
 
   async deleteTopic(id: string, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('topics')
+    const res = await supabase.schema('forum').from('topics')
       .delete()
       .eq('id', id);
     return errTuple(res);
@@ -171,8 +164,7 @@ export const forumApi = {
   async createReport({ topic_id, reason, notes }: { topic_id: string, reason: string, notes: string }, supabase: SupabaseClientType = createClient()) {
     const { data: user } = await supabase.auth.getUser();
     const reporter_id = user?.user?.id || null;
-    const res = await supabase
-      .from('reports')
+    const res = await supabase.schema('forum').from('reports')
       .insert({ topic_id, reporter_id, reason, notes })
       .select('*')
       .single();
@@ -180,16 +172,14 @@ export const forumApi = {
   },
 
   async listReports(supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('reports')
+    const res = await supabase.schema('forum').from('reports')
       .select('*, topics(id, title), profiles!reporter_id(username)')
       .order('created_at', { ascending: false });
     return errTuple(res);
   },
 
   async updateReport(id: string, patch: object, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('reports')
+    const res = await supabase.schema('forum').from('reports')
       .update(patch)
       .eq('id', id)
       .select('*')
@@ -199,8 +189,7 @@ export const forumApi = {
 
   // Posts
   async listPosts({ topicId }: { topicId: string }, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('posts')
+    const res = await supabase.schema('forum').from('posts')
       .select('*, profiles(username, role)')
       .eq('topic_id', topicId)
       .eq('status', 'published')
@@ -213,26 +202,23 @@ export const forumApi = {
     const author_id = user?.user?.id || null;
     if (!author_id) return [null, new Error('User not authenticated')];
 
-    const res = await supabase
-      .from('posts')
+    const res = await supabase.schema('forum').from('posts')
       .insert({ topic_id, author_id, body })
       .select('*')
       .single();
     return errTuple(res);
   },
 
-  async getPost(id: number, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('posts')
+  async getPost(id: string, supabase: SupabaseClientType = createClient()) {
+    const res = await supabase.schema('forum').from('posts')
       .select('*, profiles(username, role)')
       .eq('id', id)
       .single();
     return errTuple(res);
   },
 
-  async updatePost(id: number, patch: object, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('posts')
+  async updatePost(id: string, patch: object, supabase: SupabaseClientType = createClient()) {
+    const res = await supabase.schema('forum').from('posts')
       .update(patch)
       .eq('id', id)
       .select('*')
@@ -240,9 +226,8 @@ export const forumApi = {
     return errTuple(res);
   },
 
-  async deletePost(id: number, supabase: SupabaseClientType = createClient()) {
-    const res = await supabase
-      .from('posts')
+  async deletePost(id: string, supabase: SupabaseClientType = createClient()) {
+    const res = await supabase.schema('forum').from('posts')
       .delete()
       .eq('id', id);
     return errTuple(res);

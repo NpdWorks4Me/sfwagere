@@ -9,7 +9,7 @@ const TopicPageClient = NextDynamic(() => import('./TopicPageClient'), { ssr: fa
 
 async function getTopic(id: string) {
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-  const { data, error } = await supabase
+  const { data, error } = await supabase.schema('forum')
     .from('topics')
     .select('id, title, body, is_pinned, is_locked, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)')
     .eq('id', id)
