@@ -33,6 +33,11 @@ body {
     min-height: 100vh;
 }
 
+/* Header visibility control for immersive loading */
+.header { display: block; }
+[data-page="home"] .header { display: none; }
+[data-page="home"].loaded .header { display: block; }
+
 /* Typography scale and hierarchy */
 :root {
     --text-base: 1rem; /* 16px */

@@ -7,6 +7,9 @@ import styles from './HomePage.module.css';
 
 const HomePageClient = () => {
   useEffect(() => {
+    // Set page attribute for styling
+    document.body.setAttribute('data-page', 'home');
+
     // Loading screen animation
     const loadingScreen = document.getElementById('loading-screen');
     const loadingText = document.getElementById('loading-text');
@@ -31,6 +34,8 @@ const HomePageClient = () => {
             }
             // Restore scroll once loading screen is removed
             document.documentElement.style.overflow = prevOverflow;
+            // Show header after loading
+            document.body.classList.add('loaded');
           }, 500);
         }
       }, 2000);
