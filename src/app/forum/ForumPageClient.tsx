@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import Skeleton from '@/components/Skeleton';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
@@ -152,7 +153,30 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
       )}
 
       <div className="forum-content">
-        {loading && <p>Loading topics...</p>}
+        {loading && (
+          <table className="forum-topic-list skeleton-table">
+            <thead>
+              <tr>
+                <th>Topic</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Replies</th>
+                <th>Activity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i}>
+                  <td><Skeleton width={220} height={16} /></td>
+                  <td><Skeleton width={90} height={16} /></td>
+                  <td><Skeleton width={80} height={16} /></td>
+                  <td><Skeleton width={40} height={16} /></td>
+                  <td><Skeleton width={70} height={16} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
         {error && <p className="error-message">Error: {error}</p>}
         {!loading && !error && topics.length === 0 && (
           <div className="empty-state">

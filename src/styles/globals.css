@@ -40,6 +40,19 @@ html[data-text-size="1"] { font-size: 100%; }
 }
 
 .btn-link:hover { opacity: 0.8; }
+
+/* Forum skeleton helpers */
+.skeleton-table {
+  opacity: 0.9;
+}
+
+.topic-skeleton {
+  padding: 8px 0 12px;
+}
+.topic-skeleton .sk-title { margin: 16px 0; }
+.topic-skeleton .sk-sub { margin: 8px 0; }
+.topic-skeleton .sk-lines { margin: 24px 0; }
+.topic-skeleton .sk-line { margin-bottom: 12px; }
 html[data-text-size="2"] { font-size: 112.5%; }
 html[data-text-size="3"] { font-size: 125%; }
 

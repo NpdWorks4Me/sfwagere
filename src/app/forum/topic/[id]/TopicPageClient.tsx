@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Skeleton from '@/components/Skeleton';
 import { useParams, useRouter } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
 import { useAuth } from '@/context/AuthContext';
@@ -86,7 +87,17 @@ export default function TopicPageClient() {
       setError('You must be logged in to reply.');
       return;
     }
-    if (!reply.trim()) return;
+          {loading && (
+            <div className="topic-skeleton">
+              <div className="sk-title"><Skeleton width={320} height={26} /></div>
+              <div className="sk-sub"><Skeleton width={180} height={16} /></div>
+              <div className="sk-lines">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="sk-line"><Skeleton width={600} height={14} /></div>
+                ))}
+              </div>
+            </div>
+          )}
   const rl = allowAction(`post:${topicId}:${user.id}`, 10000);
     if (!rl.allowed) {
       setError(`Please wait ${(rl.waitMs/1000).toFixed(1)}s before posting again.`);
