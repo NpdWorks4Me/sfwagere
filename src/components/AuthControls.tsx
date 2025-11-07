@@ -22,6 +22,7 @@ export default function AuthControls() {
     return (
       <div className={`auth-controls ${styles.container}`}>
         <button className="btn" onClick={() => setMenuOpen(v => !v)} aria-haspopup="true" aria-expanded={menuOpen ? true : false}>
+          <span className={styles.avatar}>{username.charAt(0)}</span>
           {username}
         </button>
         {menuOpen && (
