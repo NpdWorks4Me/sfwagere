@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import ParallaxBackground from '@/components/ParallaxBackground';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
+import Script from 'next/script';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,8 +55,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <AuthProvider>
-          {/* <ParallaxBackground /> */}
+          <ParallaxBackground />
           <Header />
+          <Script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" strategy="beforeInteractive" />
           <div className="page-wrapper">
             <main id="main-content" className="main-container">{children}</main>
             <Footer />

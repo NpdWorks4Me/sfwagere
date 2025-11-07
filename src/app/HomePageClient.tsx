@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import Script from 'next/script';
 import styles from './HomePage.module.css';
 
 const HomePageClient = () => {
