@@ -1,26 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function Loading() {
   const [text, setText] = useState('[altering_reality...]');
-
-  console.log('Loading component rendered');
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    console.log('Loading component rendered');
     const words = ["[analyzing_trauma...]", "[decrypting_memories...]", "[recalibrating_reality...]", "[finding_the_lost_child...]", "[welcome.]"];
     let wordIndex = 0;
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       wordIndex++;
       if (wordIndex < words.length) {
         setText(words[wordIndex]);
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       }
     }, 3000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, []);
 
   return (
