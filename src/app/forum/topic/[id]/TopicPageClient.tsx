@@ -26,6 +26,7 @@ type Post = {
   id: string;
   body: string;
   created_at: string;
+  author_id?: string;
   profiles: { username: string; role: string } | null;
 };
 
@@ -46,6 +47,9 @@ export default function TopicPageClient() {
   const [reportNotes, setReportNotes] = useState('');
   const [reporting, setReporting] = useState(false);
   const { isModerator } = useAuth();
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingBody, setEditingBody] = useState('');
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +100,52 @@ export default function TopicPageClient() {
     setPosting(false);
   };
 
+  const beginEdit = (post: Post) => {
+    setEditingPostId(post.id);
+    setEditingBody(post.body);
+  };
+
+  const cancelEdit = () => {
+    setEditingPostId(null);
+    setEditingBody('');
+  };
+
+  const saveEdit = async () => {
+    if (!editingPostId || !editingBody.trim()) return;
+    if (!user) { setError('You must be logged in to edit.'); return; }
+    const rl = allowAction(`edit:${editingPostId}:${user.id}`, 10000);
+    if (!rl.allowed) { setError(`Please wait ${(rl.waitMs/1000).toFixed(1)}s before editing again.`); return; }
+    setEditing(true);
+    setError(null);
+    const original = posts;
+    // Optimistic update
+    setPosts(prev => prev.map(p => p.id === editingPostId ? { ...p, body: editingBody } : p));
+    const [_, err] = await forumApi.updatePost(editingPostId, { body: editingBody.trim() });
+    if (err) {
+      setError(err.message);
+      setPosts(original); // revert
+    } else {
+      // Optionally refetch to pull server-rendered markdown sanitization or other mutations
+      const [p] = await forumApi.listPosts({ topicId });
+      setPosts((p as any) || []);
+      cancelEdit();
+    }
+    setEditing(false);
+  };
+
+  const deletePost = async (postId: string) => {
+    if (!user) { setError('You must be logged in to delete.'); return; }
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    const original = posts;
+    // Optimistic remove
+    setPosts(prev => prev.filter(p => p.id !== postId));
+    const [_, err] = await forumApi.deletePost(postId);
+    if (err) {
+      setError(err.message);
+      setPosts(original);
+    }
+  };
+
   if (loading) return <div className="section-content"><p>Loading replies…</p></div>;
   if (error) return <div className="section-content"><p className="error-message">{error}</p></div>;
   if (!topic) return <div className="section-content"><p>Topic not found.</p></div>;
@@ -127,16 +177,47 @@ export default function TopicPageClient() {
       </div>
 
       <div className="posts-list">
-        {posts.map((p) => (
-          <article key={p.id} className="post-item">
-            <div className="post-author">{p.profiles?.username || 'Anonymous'}</div>
-            <div className="post-time">{new Date(p.created_at).toLocaleString()}</div>
-            <div className="post-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(p.body) }} />
-            <div className="form-actions mt-quarter">
-              <button className="btn" onClick={() => setReportOpen({ open: true, target: { postId: p.id } })}>Report</button>
-            </div>
-          </article>
-        ))}
+        {posts.map((p) => {
+          const canEdit = !!user && (user.id === p.author_id || isModerator);
+          const isEditing = editingPostId === p.id;
+          return (
+            <article key={p.id} className="post-item">
+              <div className="post-author">{p.profiles?.username || 'Anonymous'}</div>
+              <div className="post-time">{new Date(p.created_at).toLocaleString()}</div>
+              {!isEditing && (
+                <div className="post-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(p.body) }} />
+              )}
+              {isEditing && (
+                <div className="form-group">
+                  <label htmlFor={`edit-${p.id}`} className="form-label">Edit post</label>
+                  <textarea
+                    id={`edit-${p.id}`}
+                    className="form-textarea enhanced-textarea"
+                    rows={6}
+                    value={editingBody}
+                    onChange={(e) => setEditingBody(e.target.value)}
+                    disabled={editing}
+                  />
+                </div>
+              )}
+              <div className="form-actions mt-quarter">
+                <button className="btn" onClick={() => setReportOpen({ open: true, target: { postId: p.id } })}>Report</button>
+                {canEdit && !topic.is_locked && !isEditing && (
+                  <>
+                    <button className="btn" onClick={() => beginEdit(p)}>Edit</button>
+                    <button className="btn" onClick={() => deletePost(p.id)}>Delete</button>
+                  </>
+                )}
+                {canEdit && isEditing && (
+                  <>
+                    <button className="btn" onClick={cancelEdit} disabled={editing}>Cancel</button>
+                    <button className="btn btn-primary" onClick={saveEdit} disabled={editing || !editingBody.trim()}>Save</button>
+                  </>
+                )}
+              </div>
+            </article>
+          );
+        })}
         {posts.length === 0 && <p>No replies yet. Be the first to respond.</p>}
       </div>
 

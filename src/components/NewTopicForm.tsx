@@ -17,6 +17,8 @@ export default function NewTopicForm({ onTopicCreated, onClose }: NewTopicFormPr
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [contentWarning, setContentWarning] = useState(false);
+  const [contentWarningText, setContentWarningText] = useState('');
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,9 +36,11 @@ export default function NewTopicForm({ onTopicCreated, onClose }: NewTopicFormPr
 
     const [data, err] = await forumApi.createTopic({
       categorySlug: category,
-      title,
-      body,
-      // author_id will be set by RLS policy on the server
+      title: title.trim(),
+      body: body.trim(),
+      content_warning: contentWarning,
+      content_warning_text: contentWarning ? contentWarningText.trim() : '',
+      // author_id handled by RLS
     });
 
     if (err) {
@@ -86,6 +90,32 @@ export default function NewTopicForm({ onTopicCreated, onClose }: NewTopicFormPr
             <option value="identity">Identity</option>
             <option value="offtopic">Off Topic</option>
           </select>
+        </div>
+        <div className="form-group">
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={contentWarning}
+              onChange={(e) => { setContentWarning(e.target.checked); if (!e.target.checked) setContentWarningText(''); }}
+            />
+            <span>Add content warning</span>
+          </label>
+          {contentWarning && (
+            <div className="mt-quarter">
+              <label htmlFor="content-warning-text">Warning details (shown atop the topic)</label>
+              <input
+                id="content-warning-text"
+                type="text"
+                className="form-input"
+                maxLength={140}
+                placeholder="e.g. Discusses anxiety and recovery"
+                value={contentWarningText}
+                onChange={(e) => setContentWarningText(e.target.value)}
+                required
+              />
+              <small className="subtle">{contentWarningText.length}/140</small>
+            </div>
+          )}
         </div>
         <div className="form-group">
           <div className="preview-toggle-row">
