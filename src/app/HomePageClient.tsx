@@ -6,96 +6,9 @@ import styles from './HomePage.module.css';
 
 const HomePageClient = () => {
   useEffect(() => {
-    // Easter egg modal
-    const loadingScreen = document.getElementById('loading-screen');
-    const loadingText = document.getElementById('loading-text');
-    if (loadingScreen && loadingText) {
-      // Lock scroll while loading overlay is visible
-      const prevOverflow = document.documentElement.style.overflow;
-      document.documentElement.style.overflow = 'hidden';
-
-      const words = ["[analyzing_trauma...]", "[decrypting_memories...]", "[recalibrating_reality...]", "[finding_the_lost_child...]", "[welcome.]"];
-      let wordIndex = 0;
-
-      const interval = setInterval(() => {
-        wordIndex++;
-        if (wordIndex < words.length) {
-          loadingText.textContent = words[wordIndex];
-        } else {
-          clearInterval(interval);
-          loadingScreen.classList.add(styles.fadeOut);
-          setTimeout(() => {
-            if(loadingScreen.parentElement) {
-                loadingScreen.parentElement.removeChild(loadingScreen);
-            }
-            // Restore scroll once loading screen is removed
-            document.documentElement.style.overflow = prevOverflow;
-            // Show header after loading
-            document.body.classList.add('loaded');
-          }, 500);
-        }
-      }, 2000);
-    }
-
-    useEffect(() => {
-    // Easter egg modal
-    const easterEggButton = document.getElementById('easter-egg');
-    const aboutModal = document.getElementById('about-modal');
-    const modalClose = document.getElementById('modal-close');
-
-    if (easterEggButton && aboutModal && modalClose) {
-      easterEggButton.addEventListener('click', () => {
-        aboutModal.style.display = 'flex';
-      });
-      modalClose.addEventListener('click', () => {
-        aboutModal.style.display = 'none';
-      });
-      window.addEventListener('click', (event) => {
-        if (event.target === aboutModal) {
-          aboutModal.style.display = 'none';
-        }
-      });
-    }
-
-    // Blog card animation
-    const cards = document.querySelectorAll(`.${styles.blogCardContainer}`);
-    const FADE_DURATION = 750;
-
-    const updateCardProperties = (card: Element, e: MouseEvent) => {
-      const rect = card.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const tiltX = dy / (rect.height / 2);
-      const tiltY = -dx / (rect.width / 2);
-      const angle = Math.atan2(dx, dy) * (180 / Math.PI) + 180;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const perx = (e.clientX - rect.left) / rect.width;
-      const pery = (e.clientY - rect.top) / rect.height;
-
-      (card as HTMLElement).style.setProperty('--pointer-x', `${(perx * 100).toFixed(2)}%`);
-      (card as HTMLElement).style.setProperty('--pointer-y', `${(pery * 100).toFixed(2)}%`);
-    };
-
-    cards.forEach(card => {
-      let fadeTimeout: NodeJS.Timeout;
-      card.addEventListener('mousemove', (e) => {
-        card.classList.add(styles.animating);
-        clearTimeout(fadeTimeout);
-        updateCardProperties(card, e as MouseEvent);
-        fadeTimeout = setTimeout(() => {
-          card.classList.remove(styles.animating);
-        }, FADE_DURATION);
-      });
-
-      card.addEventListener('mouseleave', () => {
-        card.classList.remove(styles.animating);
-      });
-    });
-
-  }, []);
-
+    // (Temporarily disabled) Complex loading overlay logic removed for stability.
+    // (Temporarily disabled) Easter egg modal and interactive card animation removed.
+    // This leaves a no-op effect to ensure the component remains client-only without side effects.
   }, []);
 
   return (
