@@ -54,11 +54,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* <link rel="icon" href="https://twzknjvtwbxtedklclht.supabase.co/storage/v1/object/public/sfwagere/sparkylogo.svg" type="image/svg+xml" /> */}
       </head>
       <body>
-        <a href="#main-content" className="skip-link">Skip to main content</a>
+        {/* <a href="#main-content" className="skip-link">Skip to main content</a> */}
         {/* <AuthProvider> */}
           {/* <Header /> */}
           <div className="page-wrapper">
-            <main id="main-content" className="main-container">{children}</main>
+            <main className="main-container">{children}</main>
             {/* <Footer /> */}
           </div>
         {/* </AuthProvider> */}
