@@ -4,14 +4,15 @@
 }
 
 .marquee {
-    position: relative;
+    position: fixed;
+    bottom: 40px;
+    left: 0;
     width: 100%;
     height: 40px;
     background: rgba(0, 0, 0, 0.9);
     border-top: 2px solid #32FF32;
     border-bottom: 2px solid #32FF32;
     overflow: hidden;
-    margin-top: 2rem;
 }
 
 .marqueeContent {

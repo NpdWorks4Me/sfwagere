@@ -16,7 +16,7 @@ export default function Loading() {
       } else {
         clearInterval(interval);
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
