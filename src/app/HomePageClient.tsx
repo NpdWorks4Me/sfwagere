@@ -39,66 +39,62 @@ const HomePageClient = () => {
     }
 
     useEffect(() => {
-    // Simulate loading delay for testing
-    const timer = setTimeout(() => {
-      // Easter egg modal
-      const easterEggButton = document.getElementById('easter-egg');
-      const aboutModal = document.getElementById('about-modal');
-      const modalClose = document.getElementById('modal-close');
+    // Easter egg modal
+    const easterEggButton = document.getElementById('easter-egg');
+    const aboutModal = document.getElementById('about-modal');
+    const modalClose = document.getElementById('modal-close');
 
-      if (easterEggButton && aboutModal && modalClose) {
-        easterEggButton.addEventListener('click', () => {
-          aboutModal.style.display = 'flex';
-        });
-        modalClose.addEventListener('click', () => {
-          aboutModal.style.display = 'none';
-        });
-        window.addEventListener('click', (event) => {
-          if (event.target === aboutModal) {
-            aboutModal.style.display = 'none';
-          }
-        });
-      }
-
-      // Blog card animation
-      const cards = document.querySelectorAll(`.${styles.blogCardContainer}`);
-      const FADE_DURATION = 750;
-
-      const updateCardProperties = (card: Element, e: MouseEvent) => {
-        const rect = card.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = e.clientX - cx;
-        const dy = e.clientY - cy;
-        const tiltX = dy / (rect.height / 2);
-        const tiltY = -dx / (rect.width / 2);
-        const angle = Math.atan2(dx, dy) * (180 / Math.PI) + 180;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const perx = (e.clientX - rect.left) / rect.width;
-        const pery = (e.clientY - rect.top) / rect.height;
-
-        (card as HTMLElement).style.setProperty('--pointer-x', `${(perx * 100).toFixed(2)}%`);
-        (card as HTMLElement).style.setProperty('--pointer-y', `${(pery * 100).toFixed(2)}%`);
-      };
-
-      cards.forEach(card => {
-        let fadeTimeout: NodeJS.Timeout;
-        card.addEventListener('mousemove', (e) => {
-          card.classList.add(styles.animating);
-          clearTimeout(fadeTimeout);
-          updateCardProperties(card, e as MouseEvent);
-          fadeTimeout = setTimeout(() => {
-            card.classList.remove(styles.animating);
-          }, FADE_DURATION);
-        });
-
-        card.addEventListener('mouseleave', () => {
-          card.classList.remove(styles.animating);
-        });
+    if (easterEggButton && aboutModal && modalClose) {
+      easterEggButton.addEventListener('click', () => {
+        aboutModal.style.display = 'flex';
       });
-    }, 2000); // 2 second delay
+      modalClose.addEventListener('click', () => {
+        aboutModal.style.display = 'none';
+      });
+      window.addEventListener('click', (event) => {
+        if (event.target === aboutModal) {
+          aboutModal.style.display = 'none';
+        }
+      });
+    }
 
-    return () => clearTimeout(timer);
+    // Blog card animation
+    const cards = document.querySelectorAll(`.${styles.blogCardContainer}`);
+    const FADE_DURATION = 750;
+
+    const updateCardProperties = (card: Element, e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const tiltX = dy / (rect.height / 2);
+      const tiltY = -dx / (rect.width / 2);
+      const angle = Math.atan2(dx, dy) * (180 / Math.PI) + 180;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const perx = (e.clientX - rect.left) / rect.width;
+      const pery = (e.clientY - rect.top) / rect.height;
+
+      (card as HTMLElement).style.setProperty('--pointer-x', `${(perx * 100).toFixed(2)}%`);
+      (card as HTMLElement).style.setProperty('--pointer-y', `${(pery * 100).toFixed(2)}%`);
+    };
+
+    cards.forEach(card => {
+      let fadeTimeout: NodeJS.Timeout;
+      card.addEventListener('mousemove', (e) => {
+        card.classList.add(styles.animating);
+        clearTimeout(fadeTimeout);
+        updateCardProperties(card, e as MouseEvent);
+        fadeTimeout = setTimeout(() => {
+          card.classList.remove(styles.animating);
+        }, FADE_DURATION);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove(styles.animating);
+      });
+    });
+
   }, []);
 
   }, []);
