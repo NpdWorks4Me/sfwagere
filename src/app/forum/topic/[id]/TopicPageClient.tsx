@@ -338,13 +338,16 @@ export default function TopicPageClient() {
               placeholder={user ? 'Share your thoughts…' : 'Sign in to reply'}
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              disabled={!user || posting}
+              disabled={posting}
             />
           )}
           {showPreview && (
             <div className="post-body markdown-preview-box" dangerouslySetInnerHTML={{ __html: renderMarkdown(reply || '') }} />
           )}
           {error && <p className="error-message">{error}</p>}
+          {!user && (
+            <p className="subtle mt-quarter">You can draft your reply above, but you must sign in to post.</p>
+          )}
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={!user || posting || !reply.trim()}>
               {posting ? 'Posting…' : 'Post Reply'}
