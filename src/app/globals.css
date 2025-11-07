@@ -806,12 +806,19 @@ h1.site-title[data-heading="tus"]::after {
 /* Main Container */
 .main-container {
     position: relative;
-    min-height: 100vh; /* Reduced from 200vh for more compact early 2000s webpage feel */
     background: rgba(0, 0, 0, 0.3);
     -webkit-backdrop-filter: blur(1px);
     backdrop-filter: blur(1px);
     padding: 20px 0; /* Add some padding for better spacing */
-    padding-bottom: 140px; /* Space for marquee (40px) + gap (60px) + footer (~40px) */
+    padding-bottom: 20px; /* Reduced since footer is not fixed */
+    flex: 1;
+}
+
+/* Page Wrapper */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Text Overlays */

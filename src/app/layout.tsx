@@ -56,8 +56,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ParallaxBackground />
           <Header />
-          <main id="main-content" className="main-container">{children}</main>
-          <Footer />
+          <div className="page-wrapper">
+            <main id="main-content" className="main-container">{children}</main>
+            <Footer />
+          </div>
         </AuthProvider>
         <SpeedInsights />
         <Analytics />
