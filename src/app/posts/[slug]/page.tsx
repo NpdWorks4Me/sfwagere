@@ -54,6 +54,22 @@ function sanitizePostHtml(input: string): string {
   s = s.replace(/href="\/(index)\.html"/gi, 'href="/"');
   s = s.replace(/href="\/(blog|forum|faq|join)\.html"/gi, (_m, p1) => `href="/${String(p1).toLowerCase()}"`);
   s = s.replace(/href="\/([a-z0-9\-]+)\.html"/gi, 'href="/$1"');
+
+  // Inject IDs into all h2/h3
+  const slugify = (str: string) =>
+    str
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  s = s.replace(/<(h[23])([^>]*)>(.*?)<\/h[23]>/gi, (match, tag, attrs, text) => {
+    // If already has id, leave it
+    if (/id=\s*['"][^'"]+['"]/.test(attrs)) return match;
+    const id = slugify(text.replace(/<[^>]+>/g, ""));
+    return `<${tag}${attrs} id="${id}">${text}</${tag}>`;
+  });
+
   // Tidy leftover whitespace
   return s.trim();
 }
@@ -68,18 +84,9 @@ export default function PostPage({ params }: Params) {
         <h1 className="site-title" data-heading="tus" data-text={title}>{title}</h1>
         {/* Reading time + progress bar */}
         <ReadingAid />
-        <div className="post-body" dangerouslySetInnerHTML={{ __html: content }} />
-        {/* Boot client-side TOC population and toggle behavior */}
         <PostToc />
+        <div className="post-body" dangerouslySetInnerHTML={{ __html: content }} />
       </article>
-      <aside id="toc-aside" className="toc-aside" aria-label="Table of Contents">
-        <button id="toc-toggle" className="toc-toggle" aria-controls="toc-collapsible-content" aria-expanded="false">
-          Table of Contents
-        </button>
-        <div id="toc-collapsible-content" className="toc-collapsible">
-          <ul className="toc-list"></ul>
-        </div>
-      </aside>
     </div>
   );
 }
