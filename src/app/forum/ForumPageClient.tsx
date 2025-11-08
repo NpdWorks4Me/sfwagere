@@ -10,6 +10,7 @@ import Modal from '@/components/Modal';
 import NewTopicForm from '@/components/NewTopicForm';
 import ForumControls from '@/components/ForumControls';
 import AuthControls from '@/components/AuthControls';
+import styles from './ForumPage.module.css';
 
 interface Topic {
   id: string;
@@ -132,7 +133,7 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   };
 
   return (
-    <div id="content" className="container">
+    <div id="content" className={`container ${styles.compact}`}> 
       <header className="page-header">
         <h1 className="glitch-title" data-text="FORUM">FORUM</h1>
         <p>Discuss, share, and connect with the community.</p>
