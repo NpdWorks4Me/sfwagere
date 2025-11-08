@@ -78,7 +78,7 @@
     repeating-radial-gradient(circle at 40% 55%, rgba(0,0,0,0.4) 0 1px, transparent 1px 3px),
     repeating-linear-gradient(90deg, rgba(0,0,0,0.3) 0 2px, transparent 2px 4px);
   opacity: var(--grainStrength);
-  animation: grain 1.8s steps(6,end) infinite;
+  /* animation removed to stop grain jitter */
 }
 @keyframes grain {
   0%,100% { transform: translate(0,0); }
@@ -186,7 +186,6 @@
   border-radius: 2px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%23000'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E");
   box-shadow: 0 0 0 4px #fff, 0 0 0 8px #000, 0 0 15px rgba(0,255,255,0.4);
-  animation: flicker 4s linear infinite;
 }
 
 @keyframes flicker {
@@ -199,7 +198,6 @@
   line-height: 1.4;
   letter-spacing: 0.05em;
   text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
-  animation: shift 0.1s linear infinite alternate;
 }
 
 @keyframes shift {
