@@ -1,0 +1,57 @@
+.wrap { padding: 6px; }
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-bottom: 1px solid rgba(102,153,255,0.3);
+}
+.title { color: #cfe3ff; font-size: 1rem; margin: 0; font-weight: 700; }
+.closeBtn {
+  background: none; border: 1px solid rgba(102,153,255,0.5); color: #cfe3ff;
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+}
+
+.tabs { display: flex; gap: 8px; margin: 10px 0 8px; }
+.tab {
+  background: transparent; color: #aac; border: 1px solid rgba(102,153,255,0.3);
+  padding: 6px 10px; border-radius: 999px; cursor: pointer; font-weight: 600;
+}
+.tab[aria-selected="true"], .tab.active { color: #fff; border-color: rgba(102,153,255,0.7); background: rgba(102,153,255,0.12); }
+
+.body { padding: 10px; }
+.hint { color: #99aacc; font-size: 0.9rem; margin: 2px 0 10px; }
+
+.form { display: grid; gap: 10px; }
+.field { display: grid; gap: 6px; }
+.label { font-size: 0.9rem; color: #cfe3ff; }
+.inputRow { display: flex; align-items: center; gap: 6px; }
+.input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(102,153,255,0.25); color: #e6f0ff;
+  border-radius: 6px; padding: 10px 12px; font-size: 0.95rem; outline: none;
+}
+.input:focus { border-color: rgba(102,153,255,0.6); box-shadow: 0 0 0 2px rgba(102,153,255,0.25); }
+.toggleEye { background: none; border: 1px solid rgba(102,153,255,0.3); color: #cfe3ff; border-radius: 6px; padding: 6px; cursor: pointer; }
+
+.error { color: #ff6b6b; font-size: 0.85rem; margin-top: 2px; }
+.success { color: #5eead4; font-size: 0.9rem; margin-top: 4px; }
+
+.strength { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.strengthFill { height: 100%; }
+.strWeak { background: linear-gradient(90deg,#ff4d4d,#ff6b6b); }
+.strMed { background: linear-gradient(90deg,#ffb84d,#ffd166); }
+.strStrong { background: linear-gradient(90deg,#2dd4bf,#34d399); }
+
+/* Password strength width presets */
+.pw0 { width: 0%; }
+.pw1 { width: 25%; }
+.pw2 { width: 50%; }
+.pw3 { width: 75%; }
+.pw4 { width: 100%; }
+
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border-top: 1px solid rgba(102,153,255,0.3); }
+.leftLinks { display: flex; gap: 10px; }
+.linkBtn { background: none; border: none; color: #69f; text-decoration: underline; font-size: 0.9rem; cursor: pointer; padding: 0; }
+
+.primary { background: #6699ff; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.primary:disabled { opacity: .6; cursor: not-allowed; }
+.cancel { background: transparent; border: 1px solid rgba(102,153,255,0.4); color: #cfe3ff; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+
+.actionButtonsRow { display: flex; gap: 8px; }
