@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -132,6 +131,26 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
     router.push(`/forum?${params.toString()}`);
   };
 
+  const formatTimeAgo = (iso: string) => {
+    const d = new Date(iso).getTime();
+    const now = Date.now();
+    const diff = Math.max(0, now - d);
+    const s = Math.floor(diff / 1000);
+    if (s < 45) return 'now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h`;
+    const day = Math.floor(h / 24);
+    if (day < 14) return `${day}d`;
+    const wk = Math.floor(day / 7);
+    if (wk < 8) return `${wk}w`;
+    const mo = Math.floor(day / 30);
+    if (mo < 18) return `${mo}mo`;
+    const yr = Math.floor(day / 365);
+    return `${yr}y`;
+  };
+
   return (
     <div id="content" className={`container ${styles.compact}`}> 
       <header className="page-header">
@@ -198,25 +217,32 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
             </thead>
             <tbody>
               {topics.map((topic) => (
-                <tr key={topic.id}>
+                <tr key={topic.id} data-pinned={topic.is_pinned ? 'true' : 'false'} data-locked={topic.is_locked ? 'true' : 'false'}>
                   <td>
                     <div className="topic-title">
-                      <Link href={`/forum/topic/${topic.id}`}>{topic.title}</Link>
+                      <Link href={`/forum/topic/${topic.id}`} title={topic.title}>{topic.title}</Link>
                       {topic.profiles?.username && (
                         <span className={styles.authorByline}> · {topic.profiles.username}</span>
                       )}
-                      {topic.is_pinned && <span className="badge pin">Pinned</span>}
-                      {topic.is_locked && <span className="badge lock">Locked</span>}
+                      {topic.is_pinned && <span className="badge pin" title="Pinned topic">Pinned</span>}
+                      {topic.is_locked && <span className="badge lock" title="Locked topic">Locked</span>}
+                      {topic.content_warning && (
+                        <span className="badge cw" title={topic.content_warning_text || 'Content warning'}>CW</span>
+                      )}
                     </div>
                   </td>
                   <td>
                     {topic.categories && (
-                      <span className="badge category">{topic.categories.name}</span>
+                      <span className="badge category" title={topic.categories.name}>{topic.categories.name}</span>
                     )}
                   </td>
                   <td>{topic.profiles?.username || '...'}</td>
                   <td>{topic.replies}</td>
-                  <td>{new Date(topic.updated_at).toLocaleDateString()}</td>
+                  <td>
+                    <time className="time-chip" dateTime={topic.updated_at} title={new Date(topic.updated_at).toLocaleString()}>
+                      {formatTimeAgo(topic.updated_at)}
+                    </time>
+                  </td>
                 </tr>
               ))}
             </tbody>
