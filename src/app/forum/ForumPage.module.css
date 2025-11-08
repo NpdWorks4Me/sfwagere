@@ -53,15 +53,16 @@
     font-weight: 600;
   }
   .compact :global(.forum-topic-list th:nth-child(1)),
-  .compact :global(.forum-topic-list td:nth-child(1)) { width: 46%; }
+  .compact :global(.forum-topic-list td:nth-child(1)) { width: 58%; }
   .compact :global(.forum-topic-list th:nth-child(2)),
   .compact :global(.forum-topic-list td:nth-child(2)) { width: 18%; }
+  /* Hide Author column on desktop */
   .compact :global(.forum-topic-list th:nth-child(3)),
-  .compact :global(.forum-topic-list td:nth-child(3)) { width: 14%; }
+  .compact :global(.forum-topic-list td:nth-child(3)) { display: none; }
   .compact :global(.forum-topic-list th:nth-child(4)),
   .compact :global(.forum-topic-list td:nth-child(4)) { width: 10%; text-align: right; }
   .compact :global(.forum-topic-list th:nth-child(5)),
-  .compact :global(.forum-topic-list td:nth-child(5)) { width: 12%; text-align: right; }
+  .compact :global(.forum-topic-list td:nth-child(5)) { width: 14%; text-align: right; }
 
   .compact :global(.topic-title a) {
     display: -webkit-box;
@@ -71,6 +72,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .authorByline { display: inline; margin-left: 8px; font-size: 0.9rem; color: #99a; white-space: nowrap; }
   .compact :global(.badge) {
     transform: scale(0.92);
     transform-origin: left center;
@@ -102,3 +104,6 @@
     font-size: 0.9rem;
   }
 }
+
+/* Hidden by default on smaller screens to avoid duplication */
+.authorByline { display: none; }

@@ -202,6 +202,9 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                   <td>
                     <div className="topic-title">
                       <Link href={`/forum/topic/${topic.id}`}>{topic.title}</Link>
+                      {topic.profiles?.username && (
+                        <span className={styles.authorByline}> · {topic.profiles.username}</span>
+                      )}
                       {topic.is_pinned && <span className="badge pin">Pinned</span>}
                       {topic.is_locked && <span className="badge lock">Locked</span>}
                     </div>
