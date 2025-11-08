@@ -104,14 +104,7 @@
   text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff;
   position: relative;
 }
-.title:after {
-  content: "// zine";
-  font-size: 0.65em;
-  margin-left: 0.5ch;
-  font-weight: 400;
-  opacity: 0.5;
-  vertical-align: baseline;
-}
+/* removed suffix label */
 .closeButton {
   background: #111;
   color: #fafafa;

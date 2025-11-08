@@ -73,7 +73,7 @@ export default function ZineModal({ autoOpen = false }: ZineModalProps) {
         aria-controls="zine-modal"
         onClick={openModal}
       >
-        UNFUCK YOUR LIFE – zine
+        UNFUCK YOUR LIFE
       </button>
     );
   }
