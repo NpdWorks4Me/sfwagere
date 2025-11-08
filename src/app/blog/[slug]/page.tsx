@@ -72,17 +72,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <article>
               {/* Optional: could derive a title from first h1, we keep inline content. */}
               <ReadingAid />
-              <div className="post-body" dangerouslySetInnerHTML={{ __html: post.content }} />
+              {/* Inline block-style ToC (moved above the content so it shows before the post) */}
               <PostToc />
+              <div className="post-body" dangerouslySetInnerHTML={{ __html: post.content }} />
             </article>
-            <aside id="toc-aside" className="toc-aside" aria-label="Table of Contents">
-              <button id="toc-toggle" className="toc-toggle" aria-controls="toc-collapsible-content" aria-expanded="false">
-                Table of Contents
-              </button>
-              <div id="toc-collapsible-content" className="toc-collapsible">
-                <ul className="toc-list"></ul>
-              </div>
-            </aside>
           </div>
         </div>
       </section>
