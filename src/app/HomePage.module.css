@@ -3,6 +3,13 @@
     position: relative;
 }
 
+/* Zine trigger placement */
+.zineTriggerWrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
 .marquee {
     position: fixed;
     bottom: 40px;
@@ -22,7 +29,13 @@
     font-weight: bold;
     color: #32FF32;
     line-height: 40px;
-    animation: scroll 20s linear infinite;
+    animation: scroll 26s linear infinite;
+    will-change: transform;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .blogSectionCard {
@@ -109,10 +122,18 @@
     font-size: clamp(1.2rem, 3vw, 2rem);
     color: #CC0000;
     transform: rotate(-3deg);
-    animation: wobble 4s ease-in-out infinite;
+    animation: wobble 4.5s ease-in-out infinite;
     pointer-events: auto;
     cursor: pointer;
     transition: transform 180ms ease, text-shadow 180ms ease, color 180ms ease;
+}
+
+@keyframes wobble {
+    0%,100% { transform: rotate(-3deg); }
+    20% { transform: rotate(-1deg); }
+    40% { transform: rotate(-4deg); }
+    60% { transform: rotate(-2deg); }
+    80% { transform: rotate(-5deg); }
 }
 
 .bottomLeft:hover {

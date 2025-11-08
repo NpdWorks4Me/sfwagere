@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import styles from './HomePage.module.css';
+import ZineModal from '@/components/ZineModal';
 
 const HomePageClient = () => {
   useEffect(() => {
@@ -67,6 +68,10 @@ const HomePageClient = () => {
   return (
     <>
       <section className={styles.contentHome}>
+        {/* Zine trigger */}
+        <div className={styles.zineTriggerWrap}>
+          <ZineModal />
+        </div>
         {/* Scrolling Marquee */}
         <div className={styles.marquee} aria-hidden="true">
           <div className={styles.marqueeContent}>[WE BELIEVE YOU] • [YOU ARE SAFE NOW] • [THIS IS NOT A TEST] • [WE BELIEVE YOU] • [YOU ARE SAFE NOW] • [THIS IS NOT A TEST]</div>
