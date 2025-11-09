@@ -38,6 +38,8 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   const pageSize = 10;
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [votesMap, setVotesMap] = useState<Record<string, number>>({});
+  const [scoresMap, setScoresMap] = useState<Record<string, number>>({});
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const [jump, setJump] = useState('');
   const prefetchRef = useRef<number | null>(null);
@@ -66,8 +68,67 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
       setTopics(formattedData || []);
       setHasMore(!!result?.hasMore);
       setTotalCount(result?.totalCount || 0);
+      // Try to fetch scores and user votes for the displayed topics
+      try {
+        const ids = (result?.items || []).map((r: any) => r.id);
+        const [scores, sErr] = await forumApi.getTopicScores(ids);
+        if (!sErr && scores) setScoresMap(scores as Record<string, number>);
+        const [uVotes, vErr] = await forumApi.listUserVotes();
+        if (!vErr && uVotes) {
+          setVotesMap(uVotes as Record<string, number>);
+          // persist locally as fallback
+          try { localStorage.setItem('forum:votes', JSON.stringify(uVotes)); } catch {};
+        } else {
+          // fallback to localStorage
+          try {
+            const raw = localStorage.getItem('forum:votes');
+            if (raw) setVotesMap(JSON.parse(raw));
+          } catch {}
+        }
+      } catch (e) {
+        // ignore; non-critical
+      }
     }
     setLoading(false);
+  };
+
+  const setLocalVotes = (map: Record<string, number>) => {
+    try { localStorage.setItem('forum:votes', JSON.stringify(map)); } catch {}
+  };
+
+  const handleVote = async (topicId: string, dir: 1 | -1) => {
+    setVotesMap((prev) => {
+      const existing = prev[topicId] || 0;
+      const next = { ...prev };
+      // toggle same vote -> remove
+      if (existing === dir) {
+        delete next[topicId];
+      } else {
+        next[topicId] = dir;
+      }
+      setLocalVotes(next);
+      return next;
+    });
+    // Optimistically update score
+    setScoresMap((prev) => {
+      const existing = prev[topicId] || 0;
+      const userPrev = votesMap[topicId] || 0;
+      let delta = 0;
+      if (userPrev === dir) delta = -dir; // removing
+      else if (userPrev === 0) delta = dir; // new vote
+      else delta = dir - userPrev; // switching
+      return { ...prev, [topicId]: existing + delta };
+    });
+    // Persist to backend (best-effort)
+    try {
+      const [res, err] = await forumApi.voteTopic({ topicId, vote: dir });
+      if (err) {
+        // ignore server error (table may not exist). We already persisted locally.
+        console.warn('Vote API error', err);
+      }
+    } catch (e) {
+      console.warn('Vote request failed', e);
+    }
   };
 
   const handleTopicCreated = () => {
@@ -219,11 +280,23 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                 <tr key={topic.id} data-pinned={topic.is_pinned ? 'true' : 'false'} data-locked={topic.is_locked ? 'true' : 'false'}>
                   <td className="vote-col" role="gridcell">
                     <div className="vote-box" aria-hidden>
-                      <button className="vote up" title="Upvote" aria-label={`Upvote ${topic.title}`} onClick={() => { /* noop local */ }}>
+                      <button
+                        className={`vote up ${votesMap[topic.id] === 1 ? 'active' : ''}`}
+                        title="Upvote"
+                        aria-pressed={votesMap[topic.id] === 1 ? 'true' : 'false'}
+                        aria-label={`Upvote ${topic.title}`}
+                        onClick={() => handleVote(topic.id, 1)}
+                      >
                         ▲
                       </button>
-                      <div className="score" aria-hidden>{topic.replies}</div>
-                      <button className="vote down" title="Downvote" aria-label={`Downvote ${topic.title}`} onClick={() => { /* noop local */ }}>
+                      <div className="score" aria-hidden>{scoresMap[topic.id] ?? 0}</div>
+                      <button
+                        className={`vote down ${votesMap[topic.id] === -1 ? 'active' : ''}`}
+                        title="Downvote"
+                        aria-pressed={votesMap[topic.id] === -1 ? 'true' : 'false'}
+                        aria-label={`Downvote ${topic.title}`}
+                        onClick={() => handleVote(topic.id, -1)}
+                      >
                         ▼
                       </button>
                     </div>

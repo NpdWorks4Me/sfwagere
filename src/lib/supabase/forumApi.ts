@@ -232,4 +232,52 @@ export const forumApi = {
       .eq('id', id);
     return errTuple(res);
   },
+
+  // Voting (optional DB table: forum.topic_votes)
+  async voteTopic({ topicId, vote }: { topicId: string, vote: number }, supabase: SupabaseClientType = createClient()) {
+    // vote = 1 (up) or -1 (down)
+    const { data: user } = await supabase.auth.getUser();
+    const voter_id = user?.user?.id || null;
+    if (!voter_id) return [null, new Error('User not authenticated')];
+    try {
+      const res = await supabase.schema('forum').from('topic_votes')
+        .upsert({ topic_id: topicId, voter_id, vote }, { onConflict: 'topic_id,voter_id' })
+        .select('*');
+      return errTuple(res as any);
+    } catch (e: any) {
+      return [null, e];
+    }
+  },
+
+  async listUserVotes(supabase: SupabaseClientType = createClient()) {
+    const { data: user } = await supabase.auth.getUser();
+    const voter_id = user?.user?.id || null;
+    if (!voter_id) return [{}, null] as ApiResult<Record<string, number>>;
+    try {
+      const { data, error } = await supabase.schema('forum').from('topic_votes')
+        .select('topic_id, vote')
+        .eq('voter_id', voter_id);
+      if (error) return [null, error];
+      const map: Record<string, number> = {};
+      (data || []).forEach((r: any) => { map[r.topic_id] = Number(r.vote || 0); });
+      return [map, null];
+    } catch (e: any) {
+      return [null, e];
+    }
+  },
+
+  async getTopicScores(topicIds: string[] = [], supabase: SupabaseClientType = createClient()) {
+    if (!topicIds || topicIds.length === 0) return [{}, null] as ApiResult<Record<string, number>>;
+    try {
+      const { data, error } = await supabase.schema('forum').from('topic_votes')
+        .select('topic_id, vote')
+        .in('topic_id', topicIds);
+      if (error) return [null, error];
+      const map: Record<string, number> = {};
+      (data || []).forEach((r: any) => { map[r.topic_id] = (map[r.topic_id] || 0) + Number(r.vote || 0); });
+      return [map, null];
+    } catch (e: any) {
+      return [null, e];
+    }
+  },
 };
