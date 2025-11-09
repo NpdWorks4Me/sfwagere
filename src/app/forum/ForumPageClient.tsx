@@ -5,6 +5,7 @@ import Skeleton from '@/components/Skeleton';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { forumApi } from '@/lib/supabase/forumApi';
+import { createClient } from '@/lib/supabase/client';
 import Modal from '@/components/Modal';
 import NewTopicForm from '@/components/NewTopicForm';
 import ForumControls from '@/components/ForumControls';
@@ -27,6 +28,7 @@ interface Topic {
   categories: { id: number; slug: string; name: string } | null;
   profiles: { username: string; role: string } | null;
   replies: number;
+  vote_count?: number;
 }
 
 export default function ForumPageClient({ topics: initialTopics = [] }: { topics?: Topic[] }) {
@@ -40,6 +42,7 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   const [totalCount, setTotalCount] = useState(0);
   const [votesMap, setVotesMap] = useState<Record<string, number>>({});
   const [scoresMap, setScoresMap] = useState<Record<string, number>>({});
+  const [pendingVotes, setPendingVotes] = useState<Record<string, boolean>>({});
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const [jump, setJump] = useState('');
   const prefetchRef = useRef<number | null>(null);
@@ -68,25 +71,21 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
       setTopics(formattedData || []);
       setHasMore(!!result?.hasMore);
       setTotalCount(result?.totalCount || 0);
-      // Try to fetch scores and user votes for the displayed topics
+      // Populate authoritative scoresMap from returned topics (vote_count) if available
       try {
-        const ids = (result?.items || []).map((r: any) => r.id);
-        const [scores, sErr] = await forumApi.getTopicScores(ids);
-        if (!sErr && scores) setScoresMap(scores as Record<string, number>);
+        const scores: Record<string, number> = {};
+        (formattedData || []).forEach((t: any) => { if (typeof t.vote_count !== 'undefined') scores[t.id] = Number(t.vote_count || 0); });
+        if (Object.keys(scores).length) setScoresMap(scores);
+        // fetch user votes for these topics (authenticated only)
         const [uVotes, vErr] = await forumApi.listUserVotes();
         if (!vErr && uVotes) {
           setVotesMap(uVotes as Record<string, number>);
-          // persist locally as fallback
-          try { localStorage.setItem('forum:votes', JSON.stringify(uVotes)); } catch {};
+          try { localStorage.setItem('forum:votes', JSON.stringify(uVotes)); } catch {}
         } else {
-          // fallback to localStorage
-          try {
-            const raw = localStorage.getItem('forum:votes');
-            if (raw) setVotesMap(JSON.parse(raw));
-          } catch {}
+          try { const raw = localStorage.getItem('forum:votes'); if (raw) setVotesMap(JSON.parse(raw)); } catch {}
         }
       } catch (e) {
-        // ignore; non-critical
+        // ignore non-critical failures
       }
     }
     setLoading(false);
@@ -97,39 +96,77 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
   };
 
   const handleVote = async (topicId: string, dir: 1 | -1) => {
+    // Prevent duplicate clicks
+    setPendingVotes(prev => ({ ...prev, [topicId]: true }));
+    // Optimistic UI
     setVotesMap((prev) => {
       const existing = prev[topicId] || 0;
       const next = { ...prev };
-      // toggle same vote -> remove
-      if (existing === dir) {
-        delete next[topicId];
-      } else {
-        next[topicId] = dir;
-      }
+      if (existing === dir) delete next[topicId]; else next[topicId] = dir;
       setLocalVotes(next);
       return next;
     });
-    // Optimistically update score
     setScoresMap((prev) => {
       const existing = prev[topicId] || 0;
       const userPrev = votesMap[topicId] || 0;
       let delta = 0;
-      if (userPrev === dir) delta = -dir; // removing
-      else if (userPrev === 0) delta = dir; // new vote
-      else delta = dir - userPrev; // switching
+      if (userPrev === dir) delta = -dir;
+      else if (userPrev === 0) delta = dir;
+      else delta = dir - userPrev;
       return { ...prev, [topicId]: existing + delta };
     });
-    // Persist to backend (best-effort)
+
     try {
       const [res, err] = await forumApi.voteTopic({ topicId, vote: dir });
       if (err) {
-        // ignore server error (table may not exist). We already persisted locally.
-        console.warn('Vote API error', err);
+        // Handle common errors
+        const msg = (err.message || '').toString();
+        if (msg.includes('not_authenticated')) {
+          // prompt sign-in
+          try { alert('Please sign in to save your vote.'); } catch {}
+        } else if (msg.includes('rate_limited')) {
+          try { alert('You are voting too quickly — try again in a few seconds.'); } catch {}
+        } else {
+          console.warn('Vote API error', err);
+        }
+        // rollback optimistic vote by reloading authoritative score
+        const [scores, sErr] = await forumApi.getTopicScores([topicId]);
+        if (!sErr && scores) setScoresMap(prev => ({ ...prev, [topicId]: scores[topicId] ?? prev[topicId] }));
+      } else {
+        // res may be the updated score map value or null; refresh authoritative count
+        const [scores, sErr] = await forumApi.getTopicScores([topicId]);
+        if (!sErr && scores) {
+          setScoresMap(prev => ({ ...prev, [topicId]: scores[topicId] ?? prev[topicId] }));
+          setTopics(prev => prev.map(t => t.id === topicId ? { ...t, vote_count: scores[topicId] ?? t.vote_count } : t));
+        }
       }
     } catch (e) {
       console.warn('Vote request failed', e);
+    } finally {
+      setPendingVotes(prev => { const next = { ...prev }; delete next[topicId]; return next; });
     }
   };
+
+  // Realtime subscription: listen for topic updates (vote_count) and apply
+  useEffect(() => {
+    const sb = createClient();
+    let sub: any = null;
+    try {
+      sub = sb.channel('public:forum.topics')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'forum', table: 'topics' }, (payload: any) => {
+          const rec = payload.record;
+          if (!rec || !rec.id) return;
+          if (typeof rec.vote_count !== 'undefined') {
+            setScoresMap(prev => ({ ...prev, [rec.id]: Number(rec.vote_count || 0) }));
+            setTopics(prev => prev.map(t => t.id === rec.id ? { ...t, vote_count: Number(rec.vote_count || 0) } : t));
+          }
+        })
+        .subscribe();
+    } catch (e) {
+      // ignore
+    }
+    return () => { try { if (sub) sub.unsubscribe(); } catch {} };
+  }, []);
 
   const handleTopicCreated = () => {
     // Refetch with current filters
@@ -242,7 +279,6 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                 <th>Category</th>
                 <th>Author</th>
                 <th>Replies</th>
-                <th>Activity</th>
               </tr>
             </thead>
             <tbody>
@@ -252,7 +288,6 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                   <td><Skeleton width={90} height={16} /></td>
                   <td><Skeleton width={80} height={16} /></td>
                   <td><Skeleton width={40} height={16} /></td>
-                  <td><Skeleton width={70} height={16} /></td>
                 </tr>
               ))}
             </tbody>
@@ -272,7 +307,6 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                 <th aria-hidden="true">Vote</th>
                 <th>Topic</th>
                 <th>Replies</th>
-                <th>Activity</th>
               </tr>
             </thead>
             <tbody>
@@ -286,16 +320,18 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
                         aria-pressed={votesMap[topic.id] === 1 ? 'true' : 'false'}
                         aria-label={`Upvote ${topic.title}`}
                         onClick={() => handleVote(topic.id, 1)}
+                        disabled={!!pendingVotes[topic.id]}
                       >
                         ▲
                       </button>
-                      <div className="score" aria-hidden>{scoresMap[topic.id] ?? 0}</div>
+                      <div className="score" aria-hidden>{(typeof topic.vote_count !== 'undefined') ? topic.vote_count : (scoresMap[topic.id] ?? 0)}</div>
                       <button
                         className={`vote down ${votesMap[topic.id] === -1 ? 'active' : ''}`}
                         title="Downvote"
                         aria-pressed={votesMap[topic.id] === -1 ? 'true' : 'false'}
                         aria-label={`Downvote ${topic.title}`}
                         onClick={() => handleVote(topic.id, -1)}
+                        disabled={!!pendingVotes[topic.id]}
                       >
                         ▼
                       </button>
@@ -323,12 +359,6 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
 
                   <td className="replies-col" role="gridcell">
                     <div className="replies-count">{topic.replies}</div>
-                  </td>
-
-                  <td>
-                    <time className="time-chip" dateTime={topic.updated_at} title={new Date(topic.updated_at).toLocaleString()}>
-                      {formatTimeAgo(topic.updated_at)}
-                    </time>
                   </td>
                 </tr>
               ))}

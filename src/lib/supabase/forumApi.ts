@@ -77,13 +77,14 @@ export const forumApi = {
         categories: r.category_id ? { id: r.category_id, slug: r.category_slug, name: r.category_name } : null,
         profiles: { username: r.author_username, role: r.author_role },
         replies: Number(r.replies_count || 0),
+        vote_count: typeof r.vote_count !== 'undefined' ? Number(r.vote_count || 0) : undefined,
       }));
       const hasMore = page * pageSize < totalCount;
       return [{ items: items as any, totalCount, hasMore }, null];
     }
     // Legacy fallback (should rarely execute once RPC deployed)
     let query = supabase.schema('forum').from('topics')
-      .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, categories!category_id(id, slug, name), profiles!author_id(username, role)', { count: 'exact' })
+      .select('id, title, body, author_id, flags_count, is_pinned, is_locked, status, content_warning, content_warning_text, created_at, updated_at, vote_count, categories!category_id(id, slug, name), profiles!author_id(username, role)', { count: 'exact' })
       .order('is_pinned', { ascending: false });
 
     if (sort === 'newest') {
@@ -235,15 +236,28 @@ export const forumApi = {
 
   // Voting (optional DB table: forum.topic_votes)
   async voteTopic({ topicId, vote }: { topicId: string, vote: number }, supabase: SupabaseClientType = createClient()) {
+    // Prefer calling the server-side RPC which enforces throttling and updates denormalized counts.
     // vote = 1 (up) or -1 (down)
     const { data: user } = await supabase.auth.getUser();
     const voter_id = user?.user?.id || null;
     if (!voter_id) return [null, new Error('User not authenticated')];
     try {
-      const res = await supabase.schema('forum').from('topic_votes')
-        .upsert({ topic_id: topicId, voter_id, vote }, { onConflict: 'topic_id,voter_id' })
-        .select('*');
-      return errTuple(res as any);
+      const { data, error } = await supabase.rpc('forum.vote_topic_rpc', {
+        p_topic_id: topicId,
+        p_voter_id: voter_id,
+        p_vote: vote,
+      });
+      if (error) {
+        // Map known errors to friendly messages
+        const msg = (error.message || '').toString();
+        if (msg.includes('rate_limited')) return [null, new Error('rate_limited')];
+        if (msg.includes('not_authenticated')) return [null, new Error('not_authenticated')];
+        return [null, error];
+      }
+      // After voting, read the authoritative vote_count for this topic
+      const [scores, sErr] = await forumApi.getTopicScores([topicId], supabase);
+      if (!sErr && scores) return [scores[topicId] ?? null, null];
+      return [data, null];
     } catch (e: any) {
       return [null, e];
     }
