@@ -33,6 +33,22 @@ body {
     min-height: 100vh;
 }
 
+/* Comfortable horizontal spacing for content on all pages */
+:root {
+    --site-side-padding: 20px;
+    --site-side-padding-lg: 48px;
+}
+.page-wrapper {
+    padding-left: var(--site-side-padding);
+    padding-right: var(--site-side-padding);
+}
+@media (min-width: 1024px) {
+    .page-wrapper {
+        padding-left: var(--site-side-padding-lg);
+        padding-right: var(--site-side-padding-lg);
+    }
+}
+
 /* Page Loading */
 .page-loading {
     position: fixed;
