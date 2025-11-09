@@ -65,15 +65,16 @@
   }
   .compact :global(.forum-topic-list th:nth-child(1)),
   .compact :global(.forum-topic-list td:nth-child(1)) { width: 58%; }
-  .compact :global(.forum-topic-list th:nth-child(2)),
-  .compact :global(.forum-topic-list td:nth-child(2)) { width: 18%; }
-  /* Hide Author column on desktop */
-  .compact :global(.forum-topic-list th:nth-child(3)),
-  .compact :global(.forum-topic-list td:nth-child(3)) { display: none; }
-  .compact :global(.forum-topic-list th:nth-child(4)),
-  .compact :global(.forum-topic-list td:nth-child(4)) { width: 10%; text-align: right; }
-  .compact :global(.forum-topic-list th:nth-child(5)),
-  .compact :global(.forum-topic-list td:nth-child(5)) { width: 14%; text-align: right; }
+  /* Reddit-style layout adjustments: vote column + content */
+  .compact :global(.forum-topic-list.reddit-style) { font-size: 0.95rem; }
+  .compact :global(.forum-topic-list.reddit-style thead th:nth-child(1)),
+  .compact :global(.forum-topic-list.reddit-style tbody td.vote-col) { width: 58px; }
+  .compact :global(.forum-topic-list.reddit-style thead th:nth-child(2)),
+  .compact :global(.forum-topic-list.reddit-style tbody td:nth-child(2)) { width: auto; }
+  .compact :global(.forum-topic-list.reddit-style thead th:nth-child(3)),
+  .compact :global(.forum-topic-list.reddit-style tbody td.replies-col) { width: 80px; text-align: center; }
+  .compact :global(.forum-topic-list.reddit-style thead th:nth-child(4)),
+  .compact :global(.forum-topic-list.reddit-style tbody td:nth-child(4)) { width: 110px; text-align: right; }
 
   .compact :global(.topic-title a) {
     display: -webkit-box;
@@ -173,6 +174,75 @@
     padding: 6px 8px;
     font-size: 0.9rem;
   }
+}
+
+/* Reddit-style visuals */
+.compact :global(.forum-topic-list.reddit-style) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.compact :global(.forum-topic-list.reddit-style tbody tr) {
+  display: table-row;
+}
+.compact :global(.forum-topic-list.reddit-style td.vote-col) {
+  vertical-align: middle;
+  padding: 8px 10px;
+}
+.compact :global(.vote-box) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.compact :global(.vote-box .vote) {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #99a;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+.compact :global(.vote-box .vote.up) { color: #ff4500; }
+.compact :global(.vote-box .vote.down) { color: #7193ff; }
+.compact :global(.vote-box .score) {
+  font-weight: 700;
+  color: #e6edf3;
+  font-size: 0.95rem;
+}
+.compact :global(.topic-card) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.compact :global(.topic-main) {
+  display: flex;
+  flex-direction: column;
+}
+.compact :global(.topic-link) {
+  font-weight: 600;
+  color: #e6edf3;
+  text-decoration: none;
+}
+.compact :global(.topic-meta) {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #99a;
+}
+.compact :global(.replies-count) {
+  font-weight: 700;
+  color: #cfe8ff;
+}
+
+/* Responsive: on small screens fall back to stacked rows */
+@media (max-width: 1023px) {
+  .compact :global(.forum-topic-list.reddit-style thead) { display: none; }
+  .compact :global(.forum-topic-list.reddit-style tbody td) { display: block; width: 100%; }
+  .compact :global(.vote-box) { flex-direction: row; gap: 8px; }
+  .compact :global(.replies-col) { text-align: left; padding-left: 12px; }
 }
 
 /* Hidden by default on smaller screens to avoid duplication */

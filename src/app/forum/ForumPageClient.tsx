@@ -205,12 +205,11 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
           </div>
         )}
         {!loading && !error && topics.length > 0 && (
-          <table className="forum-topic-list">
+          <table className="forum-topic-list reddit-style">
             <thead>
               <tr>
+                <th aria-hidden="true">Vote</th>
                 <th>Topic</th>
-                <th>Category</th>
-                <th>Author</th>
                 <th>Replies</th>
                 <th>Activity</th>
               </tr>
@@ -218,26 +217,41 @@ export default function ForumPageClient({ topics: initialTopics = [] }: { topics
             <tbody>
               {topics.map((topic) => (
                 <tr key={topic.id} data-pinned={topic.is_pinned ? 'true' : 'false'} data-locked={topic.is_locked ? 'true' : 'false'}>
-                  <td>
-                    <div className="topic-title">
-                      <Link href={`/forum/topic/${topic.id}`} title={topic.title}>{topic.title}</Link>
-                      {topic.profiles?.username && (
-                        <span className={styles.authorByline}> · {topic.profiles.username}</span>
-                      )}
-                      {topic.is_pinned && <span className="badge pin" title="Pinned topic">Pinned</span>}
-                      {topic.is_locked && <span className="badge lock" title="Locked topic">Locked</span>}
-                      {topic.content_warning && (
-                        <span className="badge cw" title={topic.content_warning_text || 'Content warning'}>CW</span>
-                      )}
+                  <td className="vote-col" role="gridcell">
+                    <div className="vote-box" aria-hidden>
+                      <button className="vote up" title="Upvote" aria-label={`Upvote ${topic.title}`} onClick={() => { /* noop local */ }}>
+                        ▲
+                      </button>
+                      <div className="score" aria-hidden>{topic.replies}</div>
+                      <button className="vote down" title="Downvote" aria-label={`Downvote ${topic.title}`} onClick={() => { /* noop local */ }}>
+                        ▼
+                      </button>
                     </div>
                   </td>
+
                   <td>
-                    {topic.categories && (
-                      <span className="badge category" title={topic.categories.name}>{topic.categories.name}</span>
-                    )}
+                    <div className="topic-card">
+                      <div className="topic-main">
+                        <Link href={`/forum/topic/${topic.id}`} title={topic.title} className="topic-link">{topic.title}</Link>
+                        <div className="topic-meta">
+                          <span className={styles.authorByline}>{topic.profiles?.username || 'unknown'}</span>
+                          {topic.categories && (
+                            <span className="badge category" title={topic.categories.name}>{topic.categories.name}</span>
+                          )}
+                          {topic.is_pinned && <span className="badge pin" title="Pinned topic">Pinned</span>}
+                          {topic.is_locked && <span className="badge lock" title="Locked topic">Locked</span>}
+                          {topic.content_warning && (
+                            <span className="badge cw" title={topic.content_warning_text || 'Content warning'}>CW</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </td>
-                  <td>{topic.profiles?.username || '...'}</td>
-                  <td>{topic.replies}</td>
+
+                  <td className="replies-col" role="gridcell">
+                    <div className="replies-count">{topic.replies}</div>
+                  </td>
+
                   <td>
                     <time className="time-chip" dateTime={topic.updated_at} title={new Date(topic.updated_at).toLocaleString()}>
                       {formatTimeAgo(topic.updated_at)}
